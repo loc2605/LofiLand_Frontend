@@ -1,15 +1,13 @@
-import { Text, View } from "react-native";
+// app/index.tsx
+
+import { Redirect } from 'expo-router';
+
+const isAuthenticated = false; 
 
 export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-    </View>
-  );
+  if (isAuthenticated) {
+    return <Redirect href="/(app)/home" />; 
+  } else {
+    return <Redirect href="/(auth)/login" />;
+  }
 }
