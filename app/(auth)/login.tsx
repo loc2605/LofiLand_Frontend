@@ -1,6 +1,9 @@
-import { Stack, useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
-import { Alert, ImageBackground, KeyboardAvoidingView, Platform, TextInput as RNTextInput, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { Stack, useRouter, useFocusEffect } from 'expo-router';
+import React, { useRef, useState, useCallback } from 'react';
+import { Alert, ImageBackground, KeyboardAvoidingView, Platform, TextInput as RNTextInput, StyleSheet, 
+        Text, TextInput, TouchableOpacity, Keyboard , ActivityIndicator} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axiosInstance from '../../utils/axiosInstance';
 
 const backgroundImage = require('../../assets/images/background.png'); 
 
@@ -8,18 +11,46 @@ const LoginScreen = () => {
   const router = useRouter();
   const [identifier, setIdentifier] = useState(''); 
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const passwordRef = useRef<RNTextInput>(null);
 
-  const handleLogin = () => {
+  useFocusEffect(
+      useCallback(() => {
+        setIdentifier('');
+        setPassword('');
+        Keyboard.dismiss();
+      }, [])
+    );
+
+  const handleLogin = async () => {
     if (!identifier || !password) {
       Alert.alert("Lỗi", "Vui lòng nhập Email/Tên đăng nhập và Mật khẩu");
       return;
     }
-    
-    // Tích hợp API: Backend sẽ chịu trách nhiệm kiểm tra xem 'identifier' là email hay tên đăng nhập và xác thực tài khoản
-    console.log('Đăng nhập với:', { identifier, password });
-    // TODO: Tích hợp API Đăng nhập tại đây
+
+    Keyboard.dismiss();
+    setLoading(true);
+
+    try {
+      const res = await axiosInstance.post('/api/users/login', {
+        identifier,
+        password,
+      });
+
+      await AsyncStorage.setItem('auth', JSON.stringify(res.data));
+
+      router.replace('/(app)/home');
+
+    } catch (error: any) {
+      console.log('Login API error:', error);
+      Alert.alert(
+        "Lỗi",
+        error.message || error?.data?.message || "Đăng nhập thất bại. Kiểm tra IP và mạng!"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,10 +64,8 @@ const LoginScreen = () => {
         <Text style={styles.title}>LofiLand</Text>
         <Text style={styles.subtitle}>Chào mừng trở lại</Text>
         
-        {/* Trường Nhận Email hoặc Tên đăng nhập */}
         <TextInput
           style={styles.input}
-          // THAY ĐỔI 2: Cập nhật placeholder
           placeholder="Email hoặc tên đăng nhập" 
           placeholderTextColor="#B587FF"
           autoCapitalize="none"
@@ -47,7 +76,6 @@ const LoginScreen = () => {
           onSubmitEditing={() => passwordRef.current?.focus()}
         />
         
-        {/* Trường Mật khẩu */}
         <TextInput
           ref={passwordRef}
           style={styles.input}
@@ -61,15 +89,21 @@ const LoginScreen = () => {
           onSubmitEditing={handleLogin}
         />
         
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Đăng nhập</Text>
+        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.buttonText}>Đăng nhập</Text>
+          )}
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={styles.footerButton} 
           onPress={() => router.push('/(auth)/register')}
         >
-          <Text style={styles.footerText}>Bạn chưa có tài khoản? <Text style={styles.linkText}>Đăng ký</Text></Text>
+          <Text style={styles.footerText}>
+            Bạn chưa có tài khoản? <Text style={styles.linkText}>Đăng ký</Text>
+          </Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </ImageBackground>

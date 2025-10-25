@@ -1,6 +1,9 @@
-import { Stack, useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
-import { Alert, ImageBackground, KeyboardAvoidingView, Platform, TextInput as RNTextInput, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Stack, useRouter, useFocusEffect } from 'expo-router';
+import React, { useRef, useState, useCallback } from 'react';
+import { Alert, ImageBackground, KeyboardAvoidingView, Platform, TextInput as RNTextInput, StyleSheet, 
+        Text, TextInput, TouchableOpacity, View, Keyboard, ActivityIndicator} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axiosInstance from '../../utils/axiosInstance';
 
 const backgroundImage = require('../../assets/images/background.png'); 
 
@@ -10,12 +13,23 @@ const RegisterScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+  const [loading, setLoading] = useState(false);
+
   const usernameRef = useRef<RNTextInput>(null); 
   const passwordRef = useRef<RNTextInput>(null);
   const confirmPasswordRef = useRef<RNTextInput>(null);
 
-  const handleRegister = () => {
+  useFocusEffect(
+    useCallback(() => {
+      setEmail('');
+      setUsername('');
+      setPassword('');
+      setConfirmPassword('');
+      Keyboard.dismiss();
+    }, [])
+  );
+
+  const handleRegister = async () => {
     if (!email || !username || !password || !confirmPassword) {
       Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin");
       return;
@@ -25,14 +39,35 @@ const RegisterScreen = () => {
       return;
     }
     if (password.length < 6) {
-        Alert.alert("Lỗi", "Mật khẩu phải có ít nhất 6 ký tự");
-        return;
+      Alert.alert("Lỗi", "Mật khẩu phải có ít nhất 6 ký tự");
+      return;
     }
 
-    console.log('Đăng ký tài khoản:', { email, username, password });
-    
-    Alert.alert("Thành công", "Đăng ký thành công! Vui lòng Đăng nhập");
-    router.replace('/(auth)/login'); 
+    Keyboard.dismiss();
+    setLoading(true);
+
+    try {
+      const res = await axiosInstance.post('/api/users/register', {
+        email,
+        username,
+        password,
+        avatarUrl: '',
+      });
+
+      await AsyncStorage.setItem('auth', JSON.stringify(res.data));
+
+      Alert.alert("Thành công", "Đăng ký thành công! Vui lòng đăng nhập");
+      router.replace('/(auth)/login');
+
+    } catch (error: any) {
+      console.log('Register API error:', error);
+      Alert.alert(
+        "Lỗi",
+        error.message || error?.data?.message || "Không thể kết nối server"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,8 +79,8 @@ const RegisterScreen = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
-            <Text style={styles.title}>Tạo tài khoản</Text>
-            <Text style={styles.subtitle}>Bắt đầu hành trình âm nhạc của bạn</Text>
+          <Text style={styles.title}>Tạo tài khoản</Text>
+          <Text style={styles.subtitle}>Bắt đầu hành trình âm nhạc của bạn</Text>
         </View>
 
         <TextInput
@@ -100,15 +135,21 @@ const RegisterScreen = () => {
           onSubmitEditing={handleRegister}
         />
         
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Đăng ký</Text>
+        <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.buttonText}>Đăng ký</Text>
+          )}
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={styles.footerButton} 
           onPress={() => router.back()}
         >
-          <Text style={styles.footerText}>Đã có tài khoản? <Text style={styles.linkText}>Đăng nhập</Text></Text>
+          <Text style={styles.footerText}>
+            Đã có tài khoản? <Text style={styles.linkText}>Đăng nhập</Text>
+          </Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </ImageBackground>
