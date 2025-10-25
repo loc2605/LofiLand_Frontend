@@ -34,7 +34,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#B587FF',
   },
   name: {
     fontSize: 14,

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axiosInstance from '../../utils/axiosInstance';
 
 import Header from '../../components/Header';
@@ -10,25 +12,50 @@ import AlbumItem from '../../components/AlbumItem';
 import ArtistItem from '../../components/ArtistItem';
 import BottomTabBar from '../../components/BottomTabBar';
 
-type Song = { _id: string; title: string; artist: { name: string }; coverUrl: string };
+type User = {
+  username: string;
+  email: string;
+  avatarUrl?: string;
+};
+
+type Song = { 
+  _id: string; 
+  title: string; 
+  artist: { name: string }; 
+  coverUrl: string; 
+  audioUrl: string; 
+  duration: number; 
+};
 type Album = { _id: string; title: string; artist: { name: string }; coverUrl: string };
 type Artist = { _id: string; name: string; avatarUrl: string };
 
 const HomeScreen: React.FC = () => {
+  const router = useRouter();
+  
   const [songs, setSongs] = useState<Song[]>([]);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
 
-  const userProfileImage = require('../../assets/images/background.png');
+  const defaultProfileImage = require('../../assets/images/background.png');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
+        const authData = await AsyncStorage.getItem('auth');
+        if (authData) {
+          const parsed = JSON.parse(authData);
+          if (parsed?.token) {
+            await AsyncStorage.setItem('token', parsed.token);
+          }
+        }
+
+        // Lấy danh sách songs, albums, artists
         const [songsRes, albumsRes, artistsRes] = await Promise.all([
-          axiosInstance.get('/api/songs'),
+          axiosInstance.get('/api/songs'), 
           axiosInstance.get('/api/albums'),
           axiosInstance.get('/api/artists'),
         ]);
@@ -36,6 +63,10 @@ const HomeScreen: React.FC = () => {
         setSongs(songsRes.data);
         setAlbums(albumsRes.data);
         setArtists(artistsRes.data);
+
+        // Lấy thông tin user
+        const userRes = await axiosInstance.get('/api/users/me');
+        setUser(userRes.data);
       } catch (error) {
         console.log('Fetch API error:', error);
       } finally {
@@ -45,6 +76,13 @@ const HomeScreen: React.FC = () => {
 
     fetchData();
   }, []);
+
+  const handleSongPress = (song: Song) => {
+    router.push({
+      pathname: '/playingscreen',
+      params: { id: song._id },
+    });
+  };
 
   if (loading) {
     return (
@@ -57,10 +95,12 @@ const HomeScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <Header name="Ashley Scott" profileImage={userProfileImage} />
+        <Header 
+          name={user?.username || 'Người dùng'} 
+          profileImage={user?.avatarUrl ? { uri: user.avatarUrl } : defaultProfileImage} 
+        />
         <SearchBar />
 
-        {/* Gợi ý cho bạn */}
         <Text style={styles.sectionTitle}>Gợi ý cho bạn</Text>
         <FlatList
           horizontal
@@ -70,14 +110,14 @@ const HomeScreen: React.FC = () => {
               title={item.title}
               artist={item.artist?.name || 'Unknown'}
               image={item.coverUrl || 'https://picsum.photos/300'}
+              onPress={() => handleSongPress(item)}
             />
           )}
           keyExtractor={(item) => item._id}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.listPadding}
+          contentContainerStyle={{ paddingRight: 20 }}
         />
 
-        {/* Album thịnh hành */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Album thịnh hành</Text>
           <TouchableOpacity>
@@ -96,10 +136,9 @@ const HomeScreen: React.FC = () => {
           )}
           keyExtractor={(item) => item._id}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.listPadding}
+          contentContainerStyle={{ paddingRight: 20 }}
         />
 
-        {/* Nghệ sĩ nổi bật */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Nghệ sĩ nổi bật</Text>
           <TouchableOpacity>
@@ -117,7 +156,7 @@ const HomeScreen: React.FC = () => {
           )}
           keyExtractor={(item) => item._id}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.listPadding}
+          contentContainerStyle={{ paddingRight: 20 }}
         />
 
         <View style={{ height: 100 }} />
@@ -130,7 +169,6 @@ const HomeScreen: React.FC = () => {
 
 export default HomeScreen;
 
-// --- Styles ---
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -141,14 +179,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     paddingHorizontal: 20,
   },
-  listPadding: {
-    paddingRight: 20,
-  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     marginBottom: 15,
+    paddingTop: 20,
     paddingRight: 10,
   },
   sectionTitle: {

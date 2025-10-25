@@ -28,9 +28,14 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      return Promise.reject(error.response.data);
+      return Promise.reject({
+        status: error.response.status,
+        message: error.response.data?.message || 'Đã xảy ra lỗi từ server',
+        data: error.response.data,
+      });
     }
     return Promise.reject({
+      status: null,
       message: 'Không thể kết nối server. Vui lòng kiểm tra mạng hoặc server',
     });
   }
