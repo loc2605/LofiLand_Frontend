@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, Image, TouchableOpacity, StatusBar, ActivityInd
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Audio, AVPlaybackStatus, AVPlaybackStatusSuccess } from 'expo-av';
+import { Audio, AVPlaybackStatus, AVPlaybackStatusSuccess , InterruptionModeIOS, InterruptionModeAndroid} from 'expo-av';
 import Slider from '@react-native-community/slider';
 import axiosInstance from '../../utils/axiosInstance';
 
@@ -32,6 +32,26 @@ const Playingscreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<AVPlaybackStatus | null>(null);
   const soundRef = useRef<Audio.Sound | null>(null);
+
+    useEffect(() => {
+    const setupAudio = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: false,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+          interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+          playThroughEarpieceAndroid: false,
+        });
+
+      } catch (err) {
+        console.log('Error setting audio mode:', err);
+      }
+    };
+    setupAudio();
+  }, []);
 
   // Fetch song
   useEffect(() => {

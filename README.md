@@ -1,50 +1,98 @@
-# Welcome to your Expo app 👋
+# 🎶 LofiLand - Ứng Dụng Nghe Nhạc
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Chào mừng đến với **LofiLand**, dự án ứng dụng nghe nhạc đa nền tảng được xây dựng bằng **Expo**!
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Giới Thiệu Dự Án
 
-   ```bash
-   npm install
-   ```
+**LofiLand** là một ứng dụng di động được thiết kế để cung cấp trải nghiệm nghe nhạc **mượt mà và thư giãn**, tập trung vào **thể loại Lofi** và **nhạc ambient**.  
+Dự án được phát triển nhằm mang lại **giao diện thân thiện**, **dễ sử dụng** và **cá nhân hóa trải nghiệm nghe nhạc** cho người yêu nhạc.
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## 👥 Thành Viên Phát Triển
 
-In the output, you'll find options to open the app in a
+- **Đoàn Lan Hương**
+- **Phan Hữu Lộc**
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## ✨ Chức Năng Chính
 
-## Get a fresh project
+LofiLand cung cấp các tính năng cốt lõi sau để người dùng có trải nghiệm nghe nhạc trọn vẹn:
 
-When you're ready, run:
+### 🎧 Quản Lý Tài Khoản & Người Dùng
+
+- **Đăng Ký, Đăng Nhập:** Tạo tài khoản và đăng nhập để cá nhân hóa trải nghiệm.
+- **Cập Nhật Thông Tin Cá Nhân:** Chỉnh sửa thông tin hồ sơ người dùng.
+- **Đăng Xuất:** Thoát khỏi tài khoản an toàn.
+
+### 🔍 Tìm Kiếm & Thư Viện
+
+- **Tìm Kiếm Nâng Cao:** Tìm bài hát theo tên, nghệ sĩ hoặc thể loại yêu thích.
+- **Danh Sách Yêu Thích:** Tạo và quản lý danh sách bài hát yêu thích.
+- **Tạo Playlist Cá Nhân:** Tùy chỉnh và sắp xếp danh sách phát nhạc của riêng mình.
+
+### 🎵 Trải Nghiệm Nghe Nhạc
+
+- **Phát Nhạc:** Nghe nhạc mượt mà với các thao tác cơ bản (phát/tạm dừng, chuyển bài).
+- **Xem Lời Bài Hát (Lyrics):** Hiển thị lời bài hát (nếu có).
+- **Bình Luận:** Cho phép người dùng bình luận về bài hát hoặc album.
+
+---
+
+## 🛠️ Công Nghệ Sử Dụng
+
+Dự án được xây dựng dựa trên các công nghệ sau:
+
+- **Expo:** Framework và nền tảng cho React Native.
+- **React Native:** Phát triển giao diện người dùng đa nền tảng (iOS & Android).
+- **Expo Router:** Hệ thống định tuyến dựa trên cấu trúc thư mục.
+
+---
+
+## ⚙️ Bắt Đầu Phát Triển
+
+### 1️⃣ Cài Đặt
+
+Đảm bảo bạn đã cài đặt **Node.js** và **npm** hoặc **yarn**.
 
 ```bash
-npm run reset-project
+# Cài đặt các gói phụ thuộc
+npm install
+# hoặc
+yarn install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2️⃣ Khởi Động Ứng Dụng
 
-## Learn more
+Chạy lệnh sau để khởi động **Development Server**:
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npx expo start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Sau khi chạy lệnh, bạn có thể chọn cách mở ứng dụng:
 
-## Join the community
+- 📱 **Expo Go:** Mở nhanh trên thiết bị di động qua ứng dụng Expo Go.
+- 🧩 **Android Emulator:** Mở trên trình giả lập Android.
+- 🍏 **iOS Simulator:** Mở trên trình giả lập iOS.
+- 🧑‍💻 **Development Build:** Xây dựng bản phát triển tùy chỉnh.
 
-Join our community of developers creating universal apps.
+> Bạn có thể bắt đầu chỉnh sửa code trong thư mục **`app/`**.  
+> Dự án sử dụng **Expo Router** để định tuyến dựa trên file.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
+## 📚 Tài Nguyên Học Tập
+
+- [📘 Tài liệu chính thức của Expo](https://docs.expo.dev)
+- [🚀 Hướng dẫn học Expo](https://docs.expo.dev/tutorial/introduction/)  
+  → Tìm hiểu cách tạo ứng dụng chạy trên Android, iOS và Web chỉ với JavaScript.
+
+---
+
+### 🖤 Cảm Ơn Vì Đã Quan Tâm Đến LofiLand!
+
+> Hãy bật một bản nhạc yêu thích và thư giãn cùng chúng tôi.
