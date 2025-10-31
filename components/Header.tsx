@@ -1,13 +1,14 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image, ImageSourcePropType } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 type HeaderProps = { 
   name: string; 
   profileImage: ImageSourcePropType;
+  onProfilePress?: () => void;
 };
 
-const Header: React.FC<HeaderProps> = ({ name, profileImage }) => {
+const Header: React.FC<HeaderProps> = ({ name, profileImage, onProfilePress }) => {
   return (
     <View style={styles.container}>
       <View>
@@ -16,7 +17,9 @@ const Header: React.FC<HeaderProps> = ({ name, profileImage }) => {
       </View>
       <View style={styles.rightSection}>
         <Ionicons name="notifications-outline" size={24} color="#FFF" style={styles.icon} />
-        <Image source={profileImage} style={styles.profileImage} />
+        <TouchableOpacity onPress={onProfilePress}>
+          <Image source={profileImage} style={styles.profileImage} />
+        </TouchableOpacity>
       </View>
     </View>
   );

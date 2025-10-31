@@ -1,31 +1,70 @@
 import { Stack, useRouter, useFocusEffect } from 'expo-router';
 import React, { useRef, useState, useCallback } from 'react';
-import { Alert, ImageBackground, KeyboardAvoidingView, Platform, TextInput as RNTextInput, StyleSheet, 
-        Text, TextInput, TouchableOpacity, Keyboard , ActivityIndicator} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  TextInput as RNTextInput,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Keyboard,
+  ActivityIndicator,
+  View,
+} from 'react-native';
+import * as SecureStore from 'expo-secure-store'; // ✅ Dùng SecureStore
 import axiosInstance from '../../utils/axiosInstance';
+import { Image } from 'expo-image';
 
-const backgroundImage = require('../../assets/images/background.png'); 
+const backgroundImage = require('../../assets/images/background.webp');
+
+// 🔹 Tiện ích quản lý token an toàn
+const saveAuth = async (data: any) => {
+  try {
+    await SecureStore.setItemAsync('auth', JSON.stringify(data));
+  } catch (e) {
+    console.log('SecureStore saveAuth error:', e);
+  }
+};
+
+// const getAuth = async () => {
+//   try {
+//     const data = await SecureStore.getItemAsync('auth');
+//     return data ? JSON.parse(data) : null;
+//   } catch (e) {
+//     console.log('SecureStore getAuth error:', e);
+//     return null;
+//   }
+// };
+
+// const clearAuth = async () => {
+//   try {
+//     await SecureStore.deleteItemAsync('auth');
+//   } catch (e) {
+//     console.log('SecureStore clearAuth error:', e);
+//   }
+// };
 
 const LoginScreen = () => {
   const router = useRouter();
-  const [identifier, setIdentifier] = useState(''); 
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const passwordRef = useRef<RNTextInput>(null);
 
   useFocusEffect(
-      useCallback(() => {
-        setIdentifier('');
-        setPassword('');
-        Keyboard.dismiss();
-      }, [])
-    );
+    useCallback(() => {
+      setIdentifier('');
+      setPassword('');
+      Keyboard.dismiss();
+    }, [])
+  );
 
   const handleLogin = async () => {
     if (!identifier || !password) {
-      Alert.alert("Lỗi", "Vui lòng nhập Email/Tên đăng nhập và Mật khẩu");
+      Alert.alert('Lỗi', 'Vui lòng nhập Email/Tên đăng nhập và Mật khẩu');
       return;
     }
 
@@ -38,15 +77,17 @@ const LoginScreen = () => {
         password,
       });
 
-      await AsyncStorage.setItem('auth', JSON.stringify(res.data));
+      // Lưu token & thông tin user vào SecureStore
+      await saveAuth(res.data);
 
       router.replace('/(app)/home');
-
     } catch (error: any) {
       console.log('Login API error:', error);
       Alert.alert(
-        "Lỗi",
-        error.message || error?.data?.message || "Đăng nhập thất bại. Kiểm tra IP và mạng!"
+        'Lỗi',
+        error.response?.data?.message ||
+          error.message ||
+          'Đăng nhập thất bại. Kiểm tra kết nối mạng!'
       );
     } finally {
       setLoading(false);
@@ -54,19 +95,28 @@ const LoginScreen = () => {
   };
 
   return (
-    <ImageBackground source={backgroundImage} style={styles.background}>
+    <View style={{ flex: 1 }}>
+      <Image
+        source={backgroundImage}
+        style={StyleSheet.absoluteFill}
+        contentFit="cover"
+        transition={400}
+        blurRadius={2}
+        cachePolicy="memory"
+      />
+
       <Stack.Screen options={{ title: 'Đăng nhập LofiLand', headerShown: false }} />
-      
-      <KeyboardAvoidingView 
-        style={styles.keyboardAvoidingContainer} 
+
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <Text style={styles.title}>LofiLand</Text>
         <Text style={styles.subtitle}>Chào mừng trở lại</Text>
-        
+
         <TextInput
           style={styles.input}
-          placeholder="Email hoặc tên đăng nhập" 
+          placeholder="Email hoặc tên đăng nhập"
           placeholderTextColor="#B587FF"
           autoCapitalize="none"
           autoCorrect={false}
@@ -75,7 +125,7 @@ const LoginScreen = () => {
           returnKeyType="next"
           onSubmitEditing={() => passwordRef.current?.focus()}
         />
-        
+
         <TextInput
           ref={passwordRef}
           style={styles.input}
@@ -88,17 +138,21 @@ const LoginScreen = () => {
           returnKeyType="go"
           onSubmitEditing={handleLogin}
         />
-        
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.7 }]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
           {loading ? (
             <ActivityIndicator color="white" />
           ) : (
             <Text style={styles.buttonText}>Đăng nhập</Text>
           )}
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.footerButton} 
+
+        <TouchableOpacity
+          style={styles.footerButton}
           onPress={() => router.push('/(auth)/register')}
         >
           <Text style={styles.footerText}>
@@ -106,21 +160,16 @@ const LoginScreen = () => {
           </Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
-    </ImageBackground>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    resizeMode: 'cover', 
-    justifyContent: 'center',
-  },
-  keyboardAvoidingContainer: { 
+  keyboardAvoidingContainer: {
     flex: 1,
     justifyContent: 'center',
     padding: 30,
-    backgroundColor: 'rgba(26, 26, 46, 0.7)', 
+    backgroundColor: 'rgba(26, 26, 46, 0.7)',
   },
   title: {
     fontSize: 48,
@@ -131,23 +180,23 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 20,
-    color: '#C7C7E5', 
+    color: '#C7C7E5',
     textAlign: 'center',
     marginBottom: 40,
   },
   input: {
     height: 55,
-    backgroundColor: 'rgba(36, 36, 63, 0.8)', 
+    backgroundColor: 'rgba(36, 36, 63, 0.8)',
     borderRadius: 12,
     paddingHorizontal: 15,
     color: '#FFFFFF',
     marginBottom: 20,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#4A4A6F', 
+    borderColor: '#4A4A6F',
   },
   button: {
-    backgroundColor: '#9747FF', 
+    backgroundColor: '#9747FF',
     padding: 15,
     borderRadius: 12,
     alignItems: 'center',
@@ -172,9 +221,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   linkText: {
-    color: '#B587FF', 
+    color: '#B587FF',
     fontWeight: 'bold',
-  }
+  },
 });
 
 export default LoginScreen;
