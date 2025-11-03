@@ -11,6 +11,7 @@ import {
   Pressable,
   Easing,
   PanResponder,
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesome } from '@expo/vector-icons';
@@ -58,7 +59,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         if (gestureState.dy > 0) panY.setValue(gestureState.dy);
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 100) closeAnim.start(() => onClose());
+        if (gestureState.dy > 100) closeAnim.start(onClose);
         else resetPositionAnim.start();
       },
     })
@@ -67,23 +68,24 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   useEffect(() => {
     if (visible) {
       panY.setValue(height);
-      Animated.timing(panY, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }).start();
+      resetPositionAnim.start();
     } else {
-      Animated.timing(panY, {
-        toValue: height,
-        duration: 300,
-        easing: Easing.in(Easing.ease),
-        useNativeDriver: true,
-      }).start();
+      closeAnim.start();
     }
-  }, [visible, panY]);
+  }, [visible, panY, resetPositionAnim, closeAnim]);
+
+  useEffect(() => {
+    setUsername(user.username);
+    setAvatar(user.avatarUrl || "");
+  }, [user]);
 
   const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Quyền bị từ chối", "Cần cấp quyền truy cập ảnh để thay đổi avatar!");
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
@@ -101,6 +103,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   };
 
   const handleSave = () => {
+    if (!username.trim()) {
+      Alert.alert("Lỗi", "Tên không được để trống!");
+      return;
+    }
     onSave({ username, avatarUrl: avatar, imageFile });
   };
 
@@ -121,7 +127,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
         <View style={styles.body}>
           <View style={styles.avatarContainer}>
-            <Image source={{ uri: avatar }} style={styles.avatar} />
+            <Image
+              source={avatar ? { uri: avatar } : require("../../../assets/avatar-placeholder.png")}
+              style={styles.avatar}
+            />
             <TouchableOpacity style={styles.editIcon} onPress={handlePickImage}>
               <FontAwesome name="pencil" size={18} color="#191717ff" />
             </TouchableOpacity>
