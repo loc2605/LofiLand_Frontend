@@ -21,10 +21,10 @@ const TabBarItem: React.FC<TabBarItemProps> = ({ iconName, label, isFocused }) =
 const BottomTabBar: React.FC = () => {
   return (
     <View style={styles.container}>
-      <TabBarItem iconName="home-outline" label="Home" isFocused={true} />
-      <TabBarItem iconName="search-outline" label="Search" isFocused={false} />
-      <TabBarItem iconName="pulse-outline" label="Feed" isFocused={false} />
-      <TabBarItem iconName="library-outline" label="Library" isFocused={false} />
+      <TabBarItem iconName="home-outline" label="Trang chủ" isFocused={true} />
+      <TabBarItem iconName="search-outline" label="Tìm kiếm" isFocused={false} />
+      <TabBarItem iconName="pulse-outline" label="Thịnh hành" isFocused={false} />
+      <TabBarItem iconName="library-outline" label="Bộ sưu tập" isFocused={false} />
     </View>
   );
 };

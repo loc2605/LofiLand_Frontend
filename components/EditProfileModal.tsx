@@ -30,12 +30,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   onClose,
   onSave,
 }) => {
-//   const slideAnim = useRef(new Animated.Value(height)).current;
   const [username, setUsername] = useState(user.username);
   const [avatar, setAvatar] = useState(user.avatarUrl || "");
   const [imageFile, setImageFile] = useState<any>(null);
 
-  // PanResponder để kéo modal
   const panY = useRef(new Animated.Value(height)).current;
 
   const resetPositionAnim = Animated.timing(panY, {
@@ -57,23 +55,18 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) {
-          panY.setValue(gestureState.dy);
-        }
+        if (gestureState.dy > 0) panY.setValue(gestureState.dy);
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 100) {
-          closeAnim.start(() => onClose());
-        } else {
-          resetPositionAnim.start();
-        }
+        if (gestureState.dy > 100) closeAnim.start(() => onClose());
+        else resetPositionAnim.start();
       },
     })
   ).current;
 
   useEffect(() => {
     if (visible) {
-      panY.setValue(height); // reset vị trí
+      panY.setValue(height);
       Animated.timing(panY, {
         toValue: 0,
         duration: 300,
@@ -92,7 +85,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: "images",
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
 
@@ -116,28 +109,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   return (
     <View style={StyleSheet.absoluteFill}>
       <Pressable style={styles.overlay} onPress={onClose} />
-
       <Animated.View
         {...panResponder.panHandlers}
-        style={[
-          styles.modal,
-          {
-            transform: [{ translateY: panY }],
-            zIndex: 9999,
-            elevation: 20,
-          },
-        ]}
+        style={[styles.modal, { transform: [{ translateY: panY }], zIndex: 9999, elevation: 20 }]}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}>
-            <Text style={styles.cancel}>Hủy</Text>
-          </TouchableOpacity>
-
+          <TouchableOpacity onPress={onClose}><Text style={styles.cancel}>Hủy</Text></TouchableOpacity>
           <Text style={styles.title}>Chỉnh sửa hồ sơ</Text>
-
-          <TouchableOpacity onPress={handleSave}>
-            <Text style={styles.save}>Lưu</Text>
-          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSave}><Text style={styles.save}>Lưu</Text></TouchableOpacity>
         </View>
 
         <View style={styles.body}>
@@ -165,7 +144,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 };
 
 export default EditProfileModal;
-
 
 const styles = StyleSheet.create({
   overlay: {

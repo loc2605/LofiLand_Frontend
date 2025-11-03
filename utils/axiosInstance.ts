@@ -1,19 +1,24 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
-const API_BASE_URL = 'http://192.168.24.10:5000';
+const API_BASE_URL = 'http://192.168.2.36:5000';
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 5000,
 });
 
+// Tự động thêm token từ SecureStore
 axiosInstance.interceptors.request.use(
   async (config) => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      const authData = await SecureStore.getItemAsync('auth');
+      if (authData) {
+        const parsed = JSON.parse(authData);
+        const token = parsed.token;
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
       }
       return config;
     } catch (err) {
@@ -24,6 +29,7 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Xử lý lỗi từ server
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {

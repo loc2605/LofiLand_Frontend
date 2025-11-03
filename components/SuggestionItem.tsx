@@ -9,11 +9,17 @@ type SuggestionItemProps = {
 };
 
 const SuggestionItem: React.FC<SuggestionItemProps> = ({ title, artist, image, onPress }) => {
+  const artistName = artist;
+  const imageSource =
+    image && image.startsWith('http')
+      ? { uri: image }
+      : { uri: 'https://cdn-icons-png.flaticon.com/512/727/727245.png' };
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Image source={{ uri: image }} style={styles.image} />
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.artist}>{artist}</Text>
+      <Image source={imageSource} style={styles.image} />
+      <Text style={styles.title} numberOfLines={1}>{title}</Text>
+      <Text style={styles.artist} numberOfLines={1}>{artistName}</Text>
     </TouchableOpacity>
   );
 };

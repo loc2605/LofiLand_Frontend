@@ -11,7 +11,13 @@ const AlbumItem: React.FC<AlbumItemProps> = ({ title, artist, image }) => {
   return (
     <TouchableOpacity style={styles.container}>
       <Image source={{ uri: image }} style={styles.image} />
-      <Text style={styles.title}>{title}</Text>
+      <Text
+        style={styles.title}
+        numberOfLines={2}
+        ellipsizeMode="tail"
+      >
+        {title}
+      </Text>
       <Text style={styles.artist}>{artist}</Text>
     </TouchableOpacity>
   );

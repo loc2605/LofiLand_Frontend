@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
   View,
 } from 'react-native';
-import * as SecureStore from 'expo-secure-store'; // ✅ Dùng SecureStore
+import * as SecureStore from 'expo-secure-store';
 import axiosInstance from '../../utils/axiosInstance';
 import { Image } from 'expo-image';
 
@@ -76,7 +76,12 @@ const LoginScreen = () => {
         identifier,
         password,
       });
+      console.log('Login success data:', res.data);
 
+        if (!res.data?.token) {
+          Alert.alert('Lỗi', 'Token không hợp lệ');
+          return;
+        }
       // Lưu token & thông tin user vào SecureStore
       await saveAuth(res.data);
 

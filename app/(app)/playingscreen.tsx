@@ -13,10 +13,11 @@ type Song = {
   _id: string;
   title: string;
   artist: { name: string };
-  coverUrl: string;
+  album: {coverUrl: string};
   audioUrl: string;
   duration: number;
 };
+
 
 const getFormattedTime = (ms: number) => {
   const totalSec = Math.floor(ms / 1000);
@@ -59,8 +60,11 @@ const Playingscreen: React.FC = () => {
     const fetchSong = async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get(`/api/songs/${id}`);
-        setSong(res.data);
+        const res = await axiosInstance.get(`/api/deezer/tracks/${id}`);
+        setSong({
+          ...res.data,
+          coverUrl: res.data.coverUrl?.coverUrl || 'https://placehold.co/300x300',
+        });
       } catch (err) {
         console.log(err);
       } finally {
@@ -126,17 +130,27 @@ const Playingscreen: React.FC = () => {
       </SafeAreaView>
     );
 
+    const handleBack = async () => {
+    if (soundRef.current) {
+      try {
+        await soundRef.current.pauseAsync();
+      } catch (err) {
+        console.log('Error pausing audio:', err);
+      }
+    }
+    router.back();
+  };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
       {/* Background */}
-      <Image source={{ uri: song.coverUrl }} style={styles.coverBackground} blurRadius={5} />
+      <Image source={{ uri: song.album.coverUrl || 'https://placehold.co/300x300' }} style={styles.coverBackground} blurRadius={5} />
       <View style={styles.overlay} />
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={handleBack}>
           <Ionicons name="chevron-back" size={28} color="#FFF" />
         </TouchableOpacity>
             <Text style={{ color: '#FFF', fontSize: 16 }}>
@@ -149,7 +163,7 @@ const Playingscreen: React.FC = () => {
 
       {/* Main Content Full Screen */}
       <View style={styles.content}>
-        <Image source={{ uri: song.coverUrl }} style={styles.cover} />
+        <Image source={{ uri: song.album.coverUrl || 'https://placehold.co/300x300' }} style={styles.cover} />
         <View style={styles.infoContainer}>
           <Text style={styles.title}>{song.title}</Text>
           <Text style={styles.artist}>{song.artist.name}</Text>
