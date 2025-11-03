@@ -50,6 +50,7 @@ const Playingscreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<AVPlaybackStatus | null>(null);
   const soundRef = useRef<Audio.Sound | null>(null);
+  const [isShuffle, setIsShuffle] = useState(false);
 
   useEffect(() => {
     const setupAudio = async () => {
@@ -126,12 +127,23 @@ const Playingscreen: React.FC = () => {
     }
   };
 
-  const handleNext = () => {
+const handleNext = () => {
+  if (parsedPlaylist.length <= 1) return; // chỉ 1 bài thì không chuyển
+
+  if (isShuffle) {
+    let randomIndex = songIndex;
+    while (randomIndex === songIndex && parsedPlaylist.length > 1) {
+      randomIndex = Math.floor(Math.random() * parsedPlaylist.length);
+    }
+    setSongIndex(randomIndex);
+    setSong(parsedPlaylist[randomIndex]);
+  } else {
     if (songIndex < parsedPlaylist.length - 1) {
       setSongIndex(prev => prev + 1);
       setSong(parsedPlaylist[songIndex + 1]);
     }
-  };
+  }
+};
 
   const handleBack = async () => {
     if (soundRef.current) {
@@ -190,9 +202,16 @@ const Playingscreen: React.FC = () => {
         </View>
 
         <View style={styles.controls}>
-          <TouchableOpacity style={styles.smallButton}>
-            <Ionicons name="shuffle-outline" size={28} color="#FFF" />
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.smallButton}
+          onPress={() => setIsShuffle(prev => !prev)}
+        >
+          <Ionicons
+            name="shuffle-outline"
+            size={28}
+            color={isShuffle ? "#9747FF" : "#FFF"}
+          />
+        </TouchableOpacity>
           <TouchableOpacity style={styles.smallButton} onPress={handlePrev}>
             <Ionicons name="play-skip-back" size={42} color="#FFF" />
           </TouchableOpacity>
