@@ -7,7 +7,6 @@ import axiosInstance from '../../utils/axiosInstance';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../components/Header';
 import SearchBar from '../../components/SearchBar';
 import SuggestionItem from '../../components/SuggestionItem';
