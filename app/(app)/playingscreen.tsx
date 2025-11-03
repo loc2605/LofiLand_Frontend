@@ -1,23 +1,36 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, Text, Image, TouchableOpacity, StatusBar, ActivityIndicator, Dimensions } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StatusBar,
+  ActivityIndicator,
+  Dimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Audio, AVPlaybackStatus, AVPlaybackStatusSuccess , InterruptionModeIOS, InterruptionModeAndroid} from 'expo-av';
+import {
+  Audio,
+  AVPlaybackStatus,
+  AVPlaybackStatusSuccess,
+  InterruptionModeIOS,
+  InterruptionModeAndroid,
+} from 'expo-av';
 import Slider from '@react-native-community/slider';
-import axiosInstance from '../../utils/axiosInstance';
 
 const { width, height } = Dimensions.get('window');
 
 type Song = {
-  _id: string;
+  id: string;
   title: string;
   artist: { name: string };
-  album: {coverUrl: string};
+  album: { coverUrl: string };
   audioUrl: string;
-  duration: number;
+  duration?: number;
 };
-
 
 const getFormattedTime = (ms: number) => {
   const totalSec = Math.floor(ms / 1000);
@@ -27,26 +40,29 @@ const getFormattedTime = (ms: number) => {
 };
 
 const Playingscreen: React.FC = () => {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, playlist } = useLocalSearchParams<{ id: string; playlist?: string }>();
+  const parsedPlaylist: Song[] = playlist ? JSON.parse(playlist) : [];
   const router = useRouter();
-  const [song, setSong] = useState<Song | null>(null);
+
+  const [songIndex, setSongIndex] = useState(parsedPlaylist.findIndex(s => s.id === id));
+  const [song, setSong] = useState<Song | null>(parsedPlaylist[songIndex] || null);
+
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<AVPlaybackStatus | null>(null);
   const soundRef = useRef<Audio.Sound | null>(null);
 
-    useEffect(() => {
+  useEffect(() => {
     const setupAudio = async () => {
       try {
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: false,
-          staysActiveInBackground: false,
+          staysActiveInBackground: true,
           playsInSilentModeIOS: true,
           shouldDuckAndroid: true,
           interruptionModeIOS: InterruptionModeIOS.DoNotMix,
           interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
           playThroughEarpieceAndroid: false,
         });
-
       } catch (err) {
         console.log('Error setting audio mode:', err);
       }
@@ -54,83 +70,70 @@ const Playingscreen: React.FC = () => {
     setupAudio();
   }, []);
 
-  // Fetch song
   useEffect(() => {
-    if (!id) return;
-    const fetchSong = async () => {
+    if (!song) return;
+    const loadAudio = async () => {
       setLoading(true);
-      try {
-        const res = await axiosInstance.get(`/api/deezer/tracks/${id}`);
-        setSong({
-          ...res.data,
-          coverUrl: res.data.coverUrl?.coverUrl || 'https://placehold.co/300x300',
-        });
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setLoading(false);
+      if (soundRef.current) {
+        try {
+          await soundRef.current.unloadAsync();
+        } catch {}
       }
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: song.audioUrl },
+          { shouldPlay: true },
+          (s) => setStatus(s)
+        );
+        soundRef.current = sound;
+      } catch (err) {
+        console.log('Error loading audio:', err);
+      }
+      setLoading(false);
     };
-    fetchSong();
-  }, [id]);
-
-  // Load audio
-    useEffect(() => {
-        if (!song) return;
-        const loadAudio = async () => {
-            if (soundRef.current) {
-            await soundRef.current.unloadAsync().catch(() => {});
-            }
-            const { sound } = await Audio.Sound.createAsync(
-            { uri: song.audioUrl },
-            { shouldPlay: true },
-            (s) => setStatus(s)
-            );
-            soundRef.current = sound;
-        };
     loadAudio();
-    }, [song]);
+  }, [song]);
 
-  // Play / Pause
   const isLoaded = status && (status as AVPlaybackStatusSuccess).isLoaded;
   const isPlaying = isLoaded ? (status as AVPlaybackStatusSuccess).isPlaying : false;
   const position = isLoaded ? (status as AVPlaybackStatusSuccess).positionMillis : 0;
-  const duration = isLoaded ? (status as AVPlaybackStatusSuccess).durationMillis || 1 : 1;
+  const duration = isLoaded
+    ? (status as AVPlaybackStatusSuccess).durationMillis || song?.duration || 180000
+    : 180000;
 
-    const handlePlayPause = async () => {
+  const handlePlayPause = async () => {
     if (!soundRef.current) return;
     const s = await soundRef.current.getStatusAsync();
     if (!s.isLoaded) return;
     if (s.isPlaying) await soundRef.current.pauseAsync();
     else await soundRef.current.playAsync();
-    setStatus(s);
-    };
+  };
 
-    const handleSliderChange = async (val: number) => {
+  const handleSliderChange = async (val: number) => {
     if (soundRef.current && isLoaded) {
-        try {
+      try {
         await soundRef.current.setPositionAsync(val);
-        } catch (error) {
+      } catch (error) {
         console.log('Seeking error:', error);
-        }
+      }
     }
-    };
+  };
 
-  if (loading)
-    return (
-      <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color="#FFF" />
-      </SafeAreaView>
-    );
+  const handlePrev = () => {
+    if (songIndex > 0) {
+      setSongIndex(prev => prev - 1);
+      setSong(parsedPlaylist[songIndex - 1]);
+    }
+  };
 
-  if (!song)
-    return (
-      <SafeAreaView style={styles.center}>
-        <Text style={{ color: '#FFF' }}>Không tìm thấy bài hát</Text>
-      </SafeAreaView>
-    );
+  const handleNext = () => {
+    if (songIndex < parsedPlaylist.length - 1) {
+      setSongIndex(prev => prev + 1);
+      setSong(parsedPlaylist[songIndex + 1]);
+    }
+  };
 
-    const handleBack = async () => {
+  const handleBack = async () => {
     if (soundRef.current) {
       try {
         await soundRef.current.pauseAsync();
@@ -140,36 +143,37 @@ const Playingscreen: React.FC = () => {
     }
     router.back();
   };
+
+  if (loading || !song)
+    return (
+      <SafeAreaView style={styles.center}>
+        <ActivityIndicator size="large" color="#FFF" />
+      </SafeAreaView>
+    );
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-
-      {/* Background */}
-      <Image source={{ uri: song.album.coverUrl || 'https://placehold.co/300x300' }} style={styles.coverBackground} blurRadius={5} />
+      <Image source={{ uri: song.album.coverUrl }} style={styles.coverBackground} blurRadius={5} />
       <View style={styles.overlay} />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack}>
           <Ionicons name="chevron-back" size={28} color="#FFF" />
         </TouchableOpacity>
-            <Text style={{ color: '#FFF', fontSize: 16 }}>
-                {isPlaying ? 'Đang phát' : 'Tạm dừng'}
-            </Text>
+        <Text style={{ color: '#FFF', fontSize: 16 }}>{isPlaying ? 'Đang phát' : 'Tạm dừng'}</Text>
         <TouchableOpacity>
           <Ionicons name="ellipsis-vertical" size={24} color="#FFF" />
         </TouchableOpacity>
       </View>
 
-      {/* Main Content Full Screen */}
       <View style={styles.content}>
-        <Image source={{ uri: song.album.coverUrl || 'https://placehold.co/300x300' }} style={styles.cover} />
+        <Image source={{ uri: song.album.coverUrl }} style={styles.cover} />
         <View style={styles.infoContainer}>
           <Text style={styles.title}>{song.title}</Text>
           <Text style={styles.artist}>{song.artist.name}</Text>
         </View>
 
-        {/* Slider */}
         <View style={styles.sliderContainer}>
           <Text style={styles.time}>{getFormattedTime(position)}</Text>
           <Slider
@@ -185,18 +189,17 @@ const Playingscreen: React.FC = () => {
           <Text style={styles.time}>{getFormattedTime(duration)}</Text>
         </View>
 
-        {/* Controls */}
         <View style={styles.controls}>
           <TouchableOpacity style={styles.smallButton}>
             <Ionicons name="shuffle-outline" size={28} color="#FFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.smallButton}>
+          <TouchableOpacity style={styles.smallButton} onPress={handlePrev}>
             <Ionicons name="play-skip-back" size={42} color="#FFF" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.playPauseButton} onPress={handlePlayPause}>
-            <Ionicons name={isPlaying ? "pause" : "play"} size={50} color="#000" />
+            <Ionicons name={isPlaying ? 'pause' : 'play'} size={50} color="#000" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.smallButton}>
+          <TouchableOpacity style={styles.smallButton} onPress={handleNext}>
             <Ionicons name="play-skip-forward" size={42} color="#FFF" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.smallButton}>

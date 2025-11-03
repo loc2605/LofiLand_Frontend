@@ -128,7 +128,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         <View style={styles.body}>
           <View style={styles.avatarContainer}>
             <Image
-              source={avatar ? { uri: avatar } : require("../../../assets/avatar-placeholder.png")}
+              source={avatar ? { uri: avatar } : require("../assets/images/avatar.png")}
               style={styles.avatar}
             />
             <TouchableOpacity style={styles.editIcon} onPress={handlePickImage}>

@@ -193,12 +193,15 @@ const handleLogout = async () => {
     fetchSongs(); // chỉ refresh phần “Gợi ý cho bạn”
   };
 
-  const handleSongPress = (song: Song) => {
-    router.push({
-      pathname: '/playingscreen',
-      params: { id: song.id },
-    });
-  };
+const handleSongPress = (song: Song) => {
+  router.push({
+    pathname: '/playingscreen',
+    params: {
+      id: song.id,
+      playlist: JSON.stringify(songs),
+    },
+  });
+};
 
   if (loading && !refreshing) {
     return (
