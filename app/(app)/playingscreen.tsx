@@ -20,7 +20,7 @@ import {
   InterruptionModeAndroid,
 } from 'expo-av';
 import Slider from '@react-native-community/slider';
-
+import OptionMenu from '../../components/OptionMenu';
 const { width, height } = Dimensions.get('window');
 
 type Song = {
@@ -52,6 +52,7 @@ const Playingscreen: React.FC = () => {
   const soundRef = useRef<Audio.Sound | null>(null);
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeatOne, setIsRepeatOne] = useState(false);
+  const [isOptionsVisible, setIsOptionsVisible] = useState(false);
 
 
   useEffect(() => {
@@ -210,9 +211,10 @@ useEffect(() => {
           <Ionicons name="chevron-back" size={28} color="#FFF" />
         </TouchableOpacity>
         <Text style={{ color: '#FFF', fontSize: 16 }}>{isPlaying ? 'Đang phát' : 'Tạm dừng'}</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setIsOptionsVisible(true)}>
           <Ionicons name="ellipsis-vertical" size={24} color="#FFF" />
         </TouchableOpacity>
+
       </View>
 
       <View style={styles.content}>
@@ -270,6 +272,18 @@ useEffect(() => {
 
         </View>
       </View>
+      <OptionMenu
+        visible={isOptionsVisible}
+        onClose={() => setIsOptionsVisible(false)}
+        onAddToPlaylist={() => {
+          setIsOptionsVisible(false);
+          console.log('Thêm vào playlist');
+        }}
+        onAddToFavorites={() => {
+          setIsOptionsVisible(false);
+          console.log('Thêm vào yêu thích');
+        }}
+      />
     </SafeAreaView>
   );
 };
