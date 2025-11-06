@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +22,9 @@ import {
 } from 'expo-av';
 import Slider from '@react-native-community/slider';
 import OptionMenu from '../../components/OptionMenu';
+//import PlaylistModal from '../../components/PlaylistModal';
+import axiosInstance from '../../utils/axiosInstance';
+
 const { width, height } = Dimensions.get('window');
 
 type Song = {
@@ -53,7 +57,7 @@ const Playingscreen: React.FC = () => {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeatOne, setIsRepeatOne] = useState(false);
   const [isOptionsVisible, setIsOptionsVisible] = useState(false);
-
+  const [isPlaylistModalVisible, setIsPlaylistModalVisible] = useState(false);
 
   useEffect(() => {
     const setupAudio = async () => {
@@ -104,14 +108,9 @@ useEffect(() => {
     (status as AVPlaybackStatusSuccess).isLoaded &&
     (status as AVPlaybackStatusSuccess).didJustFinish
   ) {
-    if (isRepeatOne) {
-      soundRef.current?.replayAsync();
-    } else {
-      handleNext();
-    }
+    handleNext();
   }
-}, [status, isRepeatOne]);
-
+}, [status]);
 
   const isLoaded = status && (status as AVPlaybackStatusSuccess).isLoaded;
   const isPlaying = isLoaded ? (status as AVPlaybackStatusSuccess).isPlaying : false;
@@ -153,34 +152,54 @@ useEffect(() => {
     }
   };
 
-  const handleNext = () => {
-    if (isRepeatOne) {
-      soundRef.current?.replayAsync();
+  const handleNext = useCallback(() => {
+  if (isRepeatOne) {
+    soundRef.current?.replayAsync();
+    return;
+  }
+
+  if (parsedPlaylist.length <= 1) return;
+
+  if (isShuffle) {
+    let randomIndex = songIndex;
+    while (randomIndex === songIndex && parsedPlaylist.length > 1) {
+      randomIndex = Math.floor(Math.random() * parsedPlaylist.length);
+    }
+    setSongIndex(() => {
+      setSong(parsedPlaylist[randomIndex]);
+      return randomIndex;
+    });
+  } else {
+    setSongIndex(prev => {
+      if (prev < parsedPlaylist.length - 1) {
+        const newIndex = prev + 1;
+        setSong(parsedPlaylist[newIndex]);
+        return newIndex;
+      }
+      return prev;
+    });
+  }
+}, [isRepeatOne, isShuffle, songIndex, parsedPlaylist]);
+
+  const handleAddToFavorites = () => {
+    if (!song?.id) {
+      Alert.alert('Lỗi', 'Không có bài hát để thêm vào yêu thích');
       return;
     }
-
-    if (parsedPlaylist.length <= 1) return;
-
-    if (isShuffle) {
-      let randomIndex = songIndex;
-      while (randomIndex === songIndex && parsedPlaylist.length > 1) {
-        randomIndex = Math.floor(Math.random() * parsedPlaylist.length);
-      }
-      setSongIndex(() => {
-        setSong(parsedPlaylist[randomIndex]);
-        return randomIndex;
+    axiosInstance
+      .post('/api/favorites', { songId: song.id })
+      .then((res) => {
+        Alert.alert('Thành công', 'Đã thêm vào danh sách yêu thích');
+      })
+      .catch((error) => {
+        Alert.alert(
+          'Lỗi',
+          error.response?.data?.message || error.message || 'Không thể thêm vào yêu thích'
+        );
+        console.log('Error adding favorite:', error);
       });
-    } else {
-      setSongIndex(prev => {
-        if (prev < parsedPlaylist.length - 1) {
-          const newIndex = prev + 1;
-          setSong(parsedPlaylist[newIndex]);
-          return newIndex;
-        }
-        return prev;
-      });
-    }
   };
+
 
   const handleBack = async () => {
     if (soundRef.current) {
@@ -214,7 +233,6 @@ useEffect(() => {
         <TouchableOpacity onPress={() => setIsOptionsVisible(true)}>
           <Ionicons name="ellipsis-vertical" size={24} color="#FFF" />
         </TouchableOpacity>
-
       </View>
 
       <View style={styles.content}>
@@ -259,31 +277,37 @@ useEffect(() => {
           <TouchableOpacity style={styles.smallButton} onPress={handleNext}>
             <Ionicons name="play-skip-forward" size={42} color="#FFF" />
           </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.smallButton}
-          onPress={() => setIsRepeatOne(prev => !prev)}
-        >
-          <Ionicons
-            name="repeat-outline"
-            size={28}
-            color={isRepeatOne ? "#9747FF" : "#FFF"}
-          />
-        </TouchableOpacity>
-
+          <TouchableOpacity
+            style={styles.smallButton}
+            onPress={() => setIsRepeatOne(prev => !prev)}
+          >
+            <Ionicons
+              name="repeat-outline"
+              size={28}
+              color={isRepeatOne ? "#9747FF" : "#FFF"}
+            />
+          </TouchableOpacity>
         </View>
       </View>
+
       <OptionMenu
         visible={isOptionsVisible}
         onClose={() => setIsOptionsVisible(false)}
         onAddToPlaylist={() => {
           setIsOptionsVisible(false);
-          console.log('Thêm vào playlist');
+          setIsPlaylistModalVisible(true);
         }}
         onAddToFavorites={() => {
           setIsOptionsVisible(false);
-          console.log('Thêm vào yêu thích');
+          handleAddToFavorites();
         }}
       />
+
+      {/* <PlaylistModal
+        visible={isPlaylistModalVisible}
+        onClose={() => setIsPlaylistModalVisible(false)}
+        songId={song?.id}
+      /> */}
     </SafeAreaView>
   );
 };
