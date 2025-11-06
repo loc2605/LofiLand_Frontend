@@ -57,7 +57,7 @@ type Artist = {
 // ======================== Deezer API (qua Backend) ========================
 async function getMusicData() {
   try {
-    const tracksRes = await axiosInstance.get("/api/deezer/tracks?query=son tung&country=VN");
+    const tracksRes = await axiosInstance.get("/api/deezer/tracks");
 
     return {
       tracks: tracksRes.data.tracks || [],
@@ -118,8 +118,8 @@ const handleLogout = async () => {
   const fetchAlbumsAndArtists = useCallback(async () => {
     try {
       const [albumsRes, artistsRes] = await Promise.all([
-        axiosInstance.get("/api/deezer/albums?query=viet"),
-        axiosInstance.get("/api/deezer/artists?query=vpop"),
+        axiosInstance.get("/api/deezer/albums"),
+        axiosInstance.get("/api/deezer/artists"),
       ]);
 
       setAlbums(
