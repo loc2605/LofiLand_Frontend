@@ -10,7 +10,7 @@ import * as SecureStore from 'expo-secure-store';
 import Header from '../../components/Header';
 import SearchBar from '../../components/SearchBar';
 import SuggestionItem from '../../components/SuggestionItem';
-import AlbumItem from '../../components/AlbumItem';
+import AlbumItem from '../../components/AlbumItem'; // Đảm bảo AlbumItem đã nhận prop onPress
 import ArtistItem from '../../components/ArtistItem';
 import BottomTabBar from '../../components/BottomTabBar';
 import RightDrawerMenu from '../../components/RightDrawerMenu';
@@ -190,7 +190,7 @@ const handleLogout = async () => {
   // Pull-to-refresh handler
   const onRefresh = () => {
     setRefreshing(true);
-    fetchSongs(); // chỉ refresh phần “Gợi ý cho bạn”
+    fetchSongs();
   };
 
 const handleSongPress = (song: Song) => {
@@ -202,6 +202,19 @@ const handleSongPress = (song: Song) => {
     },
   });
 };
+
+const handleAlbumPress = (album: Album) => {
+  router.push({
+    pathname: '/albumdetail',
+    params: {
+      albumId: album.id,
+      albumTitle: album.title,
+      albumArtist: album.artist.name,
+      albumCover: album.coverUrl,
+    },
+  });
+};
+
 
   if (loading && !refreshing) {
     return (
@@ -272,6 +285,7 @@ const handleSongPress = (song: Song) => {
             title={item.title}
             artist={item.artist.name}
             image={item.coverUrl}
+            onPress={() => handleAlbumPress(item)}
           />
         )}
         keyExtractor={(item) => item.id}

@@ -5,11 +5,13 @@ type AlbumItemProps = {
   title: string;
   artist: string;
   image: string;
+  // THÊM: Thêm prop onPress
+  onPress: () => void;
 };
 
-const AlbumItem: React.FC<AlbumItemProps> = ({ title, artist, image }) => {
+const AlbumItem: React.FC<AlbumItemProps> = ({ title, artist, image, onPress }) => {
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <Image source={{ uri: image }} style={styles.image} />
       <Text
         style={styles.title}

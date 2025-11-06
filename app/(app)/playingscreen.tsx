@@ -57,6 +57,7 @@ const Playingscreen: React.FC = () => {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeatOne, setIsRepeatOne] = useState(false);
   const [isOptionsVisible, setIsOptionsVisible] = useState(false);
+  
   const [isPlaylistModalVisible, setIsPlaylistModalVisible] = useState(false);
 
   useEffect(() => {
