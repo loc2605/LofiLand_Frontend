@@ -51,6 +51,8 @@ const Playingscreen: React.FC = () => {
   const [status, setStatus] = useState<AVPlaybackStatus | null>(null);
   const soundRef = useRef<Audio.Sound | null>(null);
   const [isShuffle, setIsShuffle] = useState(false);
+  const [isRepeatOne, setIsRepeatOne] = useState(false);
+
 
   useEffect(() => {
     const setupAudio = async () => {
@@ -95,6 +97,21 @@ const Playingscreen: React.FC = () => {
     loadAudio();
   }, [song]);
 
+useEffect(() => {
+  if (
+    status &&
+    (status as AVPlaybackStatusSuccess).isLoaded &&
+    (status as AVPlaybackStatusSuccess).didJustFinish
+  ) {
+    if (isRepeatOne) {
+      soundRef.current?.replayAsync();
+    } else {
+      handleNext();
+    }
+  }
+}, [status, isRepeatOne]);
+
+
   const isLoaded = status && (status as AVPlaybackStatusSuccess).isLoaded;
   const isPlaying = isLoaded ? (status as AVPlaybackStatusSuccess).isPlaying : false;
   const position = isLoaded ? (status as AVPlaybackStatusSuccess).positionMillis : 0;
@@ -122,28 +139,37 @@ const Playingscreen: React.FC = () => {
 
   const handlePrev = () => {
     if (songIndex > 0) {
-      setSongIndex(prev => prev - 1);
-      setSong(parsedPlaylist[songIndex - 1]);
+      setSongIndex(prev => {
+        const newIndex = prev - 1;
+        setSong(parsedPlaylist[newIndex]);
+        return newIndex;
+      });
     }
   };
 
-const handleNext = () => {
-  if (parsedPlaylist.length <= 1) return; // chỉ 1 bài thì không chuyển
+  const handleNext = () => {
+    if (parsedPlaylist.length <= 1) return;
 
-  if (isShuffle) {
-    let randomIndex = songIndex;
-    while (randomIndex === songIndex && parsedPlaylist.length > 1) {
-      randomIndex = Math.floor(Math.random() * parsedPlaylist.length);
+    if (isShuffle) {
+      let randomIndex = songIndex;
+      while (randomIndex === songIndex && parsedPlaylist.length > 1) {
+        randomIndex = Math.floor(Math.random() * parsedPlaylist.length);
+      }
+      setSongIndex(() => {
+        setSong(parsedPlaylist[randomIndex]);
+        return randomIndex;
+      });
+    } else {
+      setSongIndex(prev => {
+        if (prev < parsedPlaylist.length - 1) {
+          const newIndex = prev + 1;
+          setSong(parsedPlaylist[newIndex]);
+          return newIndex;
+        }
+        return prev;
+      });
     }
-    setSongIndex(randomIndex);
-    setSong(parsedPlaylist[randomIndex]);
-  } else {
-    if (songIndex < parsedPlaylist.length - 1) {
-      setSongIndex(prev => prev + 1);
-      setSong(parsedPlaylist[songIndex + 1]);
-    }
-  }
-};
+  };
 
   const handleBack = async () => {
     if (soundRef.current) {
@@ -202,16 +228,16 @@ const handleNext = () => {
         </View>
 
         <View style={styles.controls}>
-        <TouchableOpacity
-          style={styles.smallButton}
-          onPress={() => setIsShuffle(prev => !prev)}
-        >
-          <Ionicons
-            name="shuffle-outline"
-            size={28}
-            color={isShuffle ? "#9747FF" : "#FFF"}
-          />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.smallButton}
+            onPress={() => setIsShuffle(prev => !prev)}
+          >
+            <Ionicons
+              name="shuffle-outline"
+              size={28}
+              color={isShuffle ? "#9747FF" : "#FFF"}
+            />
+          </TouchableOpacity>
           <TouchableOpacity style={styles.smallButton} onPress={handlePrev}>
             <Ionicons name="play-skip-back" size={42} color="#FFF" />
           </TouchableOpacity>
@@ -221,9 +247,17 @@ const handleNext = () => {
           <TouchableOpacity style={styles.smallButton} onPress={handleNext}>
             <Ionicons name="play-skip-forward" size={42} color="#FFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.smallButton}>
-            <Ionicons name="repeat-outline" size={28} color="#FFF" />
+          <TouchableOpacity
+            style={styles.smallButton}
+            onPress={() => setIsRepeatOne(prev => !prev)}
+          >
+            <Ionicons
+              name="repeat-outline"
+              size={28}
+              color={isRepeatOne ? "#9747FF" : "#FFF"}
+            />
           </TouchableOpacity>
+
         </View>
       </View>
     </SafeAreaView>
