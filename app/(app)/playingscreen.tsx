@@ -138,6 +138,11 @@ useEffect(() => {
   };
 
   const handlePrev = () => {
+    if (isRepeatOne) {
+      soundRef.current?.replayAsync();
+      return;
+    }
+
     if (songIndex > 0) {
       setSongIndex(prev => {
         const newIndex = prev - 1;
@@ -148,6 +153,11 @@ useEffect(() => {
   };
 
   const handleNext = () => {
+    if (isRepeatOne) {
+      soundRef.current?.replayAsync();
+      return;
+    }
+
     if (parsedPlaylist.length <= 1) return;
 
     if (isShuffle) {
@@ -247,16 +257,16 @@ useEffect(() => {
           <TouchableOpacity style={styles.smallButton} onPress={handleNext}>
             <Ionicons name="play-skip-forward" size={42} color="#FFF" />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.smallButton}
-            onPress={() => setIsRepeatOne(prev => !prev)}
-          >
-            <Ionicons
-              name="repeat-outline"
-              size={28}
-              color={isRepeatOne ? "#9747FF" : "#FFF"}
-            />
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.smallButton}
+          onPress={() => setIsRepeatOne(prev => !prev)}
+        >
+          <Ionicons
+            name="repeat-outline"
+            size={28}
+            color={isRepeatOne ? "#9747FF" : "#FFF"}
+          />
+        </TouchableOpacity>
 
         </View>
       </View>
