@@ -301,6 +301,7 @@ const handleAlbumPress = (album: Album) => {
         data={artists}
         renderItem={({ item }) => (
           <ArtistItem
+            id={item.id}
             name={item.name}
             image={item.avatarUrl}
             onPress={() =>

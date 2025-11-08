@@ -5,7 +5,6 @@ type AlbumItemProps = {
   title: string;
   artist: string;
   image: string;
-  // THÊM: Thêm prop onPress
   onPress: () => void;
 };
 
@@ -29,12 +28,12 @@ export default AlbumItem;
 
 const styles = StyleSheet.create({
   container: {
-    width: 120,
+    width: 130,
     marginRight: 15,
   },
   image: {
-    width: 120,
-    height: 120,
+    width: 140,
+    height: 140,
     borderRadius: 5,
     marginBottom: 5,
   },

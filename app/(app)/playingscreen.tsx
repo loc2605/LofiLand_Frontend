@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   Audio,
   AVPlaybackStatus,
@@ -113,6 +114,16 @@ useEffect(() => {
   }
 }, [status]);
 
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        // khi màn hình blur, tạm dừng nhạc
+        if (soundRef.current) {
+          soundRef.current.unloadAsync().catch(err => console.log(err));
+        }
+      };
+    }, [])
+  );
   const isLoaded = status && (status as AVPlaybackStatusSuccess).isLoaded;
   const isPlaying = isLoaded ? (status as AVPlaybackStatusSuccess).isPlaying : false;
   const position = isLoaded ? (status as AVPlaybackStatusSuccess).positionMillis : 0;

@@ -8,7 +8,6 @@ import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import axiosInstance from '../../utils/axiosInstance';
 
-// Định nghĩa Type Song
 type Song = {
   id: string;
   title: string;
@@ -26,7 +25,6 @@ const AlbumDetailScreen: React.FC = () => {
   const [tracks, setTracks] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Hàm gọi API lấy danh sách bài hát trong album
   const fetchAlbumTracks = useCallback(async () => {
     if (!albumId || typeof albumId !== 'string') return;
 
@@ -213,9 +211,9 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   shuffleButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
     backgroundColor: '#9747FF',
     justifyContent: 'center',
     alignItems: 'center',
