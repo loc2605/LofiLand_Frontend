@@ -4,21 +4,23 @@ import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 type ArtistItemProps = {
   name: string;
   image: string;
+  onPress?: () => void;
 };
 
-const ArtistItem: React.FC<ArtistItemProps> = ({ name, image }) => {
+const ArtistItem: React.FC<ArtistItemProps> = ({ name, image, onPress }) => {
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <Image source={{ uri: image }} style={styles.image} />
       <Text style={styles.name} numberOfLines={1}>
         {name}
       </Text>
-      <TouchableOpacity style={styles.followButton}>
+      <View style={styles.followButton}>
         <Text style={styles.followButtonText}>Theo dõi</Text>
-      </TouchableOpacity>
-    </View>
+      </View>
+    </TouchableOpacity>
   );
 };
+
 
 export default ArtistItem;
 
