@@ -303,10 +303,16 @@ const handleAlbumPress = (album: Album) => {
           <ArtistItem
             name={item.name}
             image={item.avatarUrl}
-            onPress={() => router.push({
-              pathname: '/artistdetail',
-              params: { artistId: item.id },
-            })}
+            onPress={() =>
+              router.push({
+                pathname: '/artistdetail',
+                params: {
+                  artistId: item.id,
+                  artistName: item.name,
+                  artistImage: item.avatarUrl,
+                },
+              })
+            }
           />
         )}
         keyExtractor={(item) => item.id}
