@@ -1,16 +1,29 @@
 import React from 'react';
-import { StyleSheet, View, TextInput } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const SearchBar: React.FC = () => {
+type SearchBarProps = {
+  value: string;
+  onChangeText: (text: string) => void;
+  onClear?: () => void;
+};
+
+const SearchBar: React.FC<SearchBarProps> = ({ value, onChangeText, onClear }) => {
   return (
     <View style={styles.container}>
-      <Ionicons name="search-outline" size={20} color="#8A8A8A" style={styles.icon} />
+      <Ionicons name="search-outline" size={22} color="#8A8A8A" style={styles.icon} />
       <TextInput
         style={styles.input}
         placeholder="Bạn muốn nghe gì?"
         placeholderTextColor="#8A8A8A"
+        value={value}
+        onChangeText={onChangeText}
       />
+      {value.length > 0 && (
+        <TouchableOpacity onPress={onClear}>
+          <Ionicons name="close-circle" size={22} color="#8A8A8A" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

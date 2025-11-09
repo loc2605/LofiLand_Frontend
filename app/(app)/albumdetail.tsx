@@ -202,12 +202,12 @@ const styles = StyleSheet.create({
   },
   albumArtist: {
     fontSize: 16,
-    color: '#A9A9A9',
+    color: '#1e1a1aff',
     marginTop: 5,
   },
   albumStats: {
     fontSize: 14,
-    color: '#A9A9A9',
+    color: '#1e1a1aff',
     marginTop: 5,
   },
   shuffleButton: {

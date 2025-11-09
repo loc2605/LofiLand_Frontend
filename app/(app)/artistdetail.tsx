@@ -44,7 +44,6 @@ const ArtistDetailScreen: React.FC = () => {
   const fetchArtistDetail = useCallback(async () => {
     try {
       const res = await axiosInstance.get(`/api/deezer/artist/${artistId}/detail`);
-      if (res.data.artist) setArtist(res.data.artist);
       if (res.data.albums) setAlbums(res.data.albums);
       if (res.data.tracks) setTracks(res.data.tracks);
     } catch (error) {
@@ -66,9 +65,7 @@ const ArtistDetailScreen: React.FC = () => {
   };
 
   const handlePlayFirstTrack = () => {
-    if (tracks.length) {
-      handleTrackPress(tracks[0]);
-    }
+    if (tracks.length) handleTrackPress(tracks[0]);
   };
 
   const handleFollow = async () => {
@@ -90,7 +87,6 @@ const ArtistDetailScreen: React.FC = () => {
       setFollowLoading(false);
     }
   };
-
 
   if (loading || !artist) {
     return (
@@ -198,67 +194,24 @@ const ArtistDetailScreen: React.FC = () => {
 export default ArtistDetailScreen;
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#000' 
+  container: { flex: 1, backgroundColor: '#000' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' },
+  fixedHeader: { zIndex: 10, backgroundColor: '#000', paddingBottom: 10, paddingTop: 10 },
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(36,36,63,0.3)' },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10 },
+  backButton: { padding: 5, marginRight: 10 },
+  artistHeader: { alignItems: 'center', marginVertical: 15, paddingHorizontal: 20 },
+  artistAvatar: {
+    width: 150,
+    height: 150,
+    borderRadius: 75.5,
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: '#A9A9A9',
   },
-  center: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    backgroundColor: '#000' 
-  },
-  fixedHeader: { 
-    zIndex: 10, 
-    backgroundColor: '#000', 
-    paddingBottom: 10, 
-    paddingTop: 10 
-  },
-  overlay: { 
-    ...StyleSheet.absoluteFillObject, 
-    backgroundColor: 'rgba(36,36,63,0.3)' 
-  },
-  header: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    paddingHorizontal: 15, 
-    paddingVertical: 10 
-  },
-  backButton: { 
-    padding: 5, 
-    marginRight: 10 
-  },
-
-  artistHeader: { 
-    alignItems: 'center', 
-    marginVertical: 15, 
-    paddingHorizontal: 20 
-  },
-  artistAvatar: { 
-    width: 150, 
-    height: 150, 
-    borderRadius: 75.5, 
-    marginBottom: 10, 
-    borderWidth: 2, 
-    borderColor: '#A9A9A9' 
-  },
-  artistName: { 
-    fontSize: 26, 
-    fontWeight: 'bold', 
-    color: '#FFF', 
-    marginBottom: 20, 
-    textAlign: 'center' 
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-  },
-  followButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-  },
+  artistName: { fontSize: 26, fontWeight: 'bold', color: '#FFF', marginBottom: 20, textAlign: 'center' },
+  buttonRow: { flexDirection: 'row', alignItems: 'center', width: '100%' },
+  followButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 30 },
   playButton: {
     width: 65,
     height: 65,
@@ -268,61 +221,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 'auto',
   },
-  following: { 
-    backgroundColor: '#666' 
-  },
-  notFollowing: { 
-    backgroundColor: '#9747FF' 
-  },
-  followText: { 
-    color: '#FFF', 
-    fontWeight: 'bold' 
-  },
-
-  sectionTitle: { 
-    fontSize: 20, 
-    fontWeight: 'bold', 
-    color: '#FFF', 
-    marginVertical: 15, 
-    marginLeft: 10 
-  },
-  albumItem: { 
-    marginRight: 15, 
-    alignItems: 'center', 
-    width: 120 
-  },
-  albumImage: { 
-    width: 120, 
-    height: 120, 
-    borderRadius: 8 
-  },
-  albumTitle: { 
-    color: '#FFF', 
-    width: 120, 
-    textAlign: 'center', 
-    marginTop: 5 
-  },
-  trackItem: { 
-    marginBottom: 15, 
-    paddingHorizontal: 10 
-  },
-  trackInfo: { 
-    flexDirection: 'row', 
-    alignItems: 'center' 
-  },
-  trackImage: { 
-    width: 50, 
-    height: 50, 
-    borderRadius: 8, 
-    marginRight: 10 
-  },
-  trackTitle: { 
-    color: '#FFF', 
-    fontSize: 16 
-  },
-  albumName: { 
-    color: '#A9A9A9', 
-    fontSize: 14 
-  },
+  following: { backgroundColor: '#666' },
+  notFollowing: { backgroundColor: '#9747FF' },
+  followText: { color: '#FFF', fontWeight: 'bold' },
+  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#FFF', marginVertical: 15, marginLeft: 10 },
+  albumItem: { marginRight: 15, alignItems: 'center', width: 120 },
+  albumImage: { width: 120, height: 120, borderRadius: 8 },
+  albumTitle: { color: '#FFF', width: 120, textAlign: 'center', marginTop: 5 },
+  trackItem: { marginBottom: 15, paddingHorizontal: 10 },
+  trackInfo: { flexDirection: 'row', alignItems: 'center' },
+  trackImage: { width: 50, height: 50, borderRadius: 8, marginRight: 10 },
+  trackTitle: { color: '#FFF', fontSize: 16 },
+  albumName: { color: '#A9A9A9', fontSize: 14 },
 });
-
