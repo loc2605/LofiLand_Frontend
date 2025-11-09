@@ -34,7 +34,6 @@ export const FollowProvider = ({ children }: { children: ReactNode }) => {
   // Follow artist
   const follow = (artistId: string) => {
     setFollowedArtists(prev => new Set(prev).add(artistId));
-    // Gọi API backend để lưu
     axiosInstance.post('/api/follows/follow', { artistId }).catch(err => {
       console.log('Follow API error:', err);
     });
@@ -47,13 +46,11 @@ export const FollowProvider = ({ children }: { children: ReactNode }) => {
       newSet.delete(artistId);
       return newSet;
     });
-    // Gọi API backend để lưu
     axiosInstance.post('/api/follows/unfollow', { artistId }).catch(err => {
       console.log('Unfollow API error:', err);
     });
   };
 
-  // Check nếu đang follow
   const isFollowing = (artistId: string) => {
     return followedArtists.has(artistId);
   };
@@ -65,7 +62,6 @@ export const FollowProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Hook dùng trong component
 export const useFollow = () => {
   const context = useContext(FollowContext);
   if (!context) throw new Error('useFollow must be used within FollowProvider');

@@ -14,7 +14,7 @@ import {
   Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome } from "@expo/vector-icons";
 
 const { height } = Dimensions.get("window");
 
@@ -65,19 +65,17 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     })
   ).current;
 
+  // Chỉ reset state khi modal mở, tránh reset khi gõ
   useEffect(() => {
     if (visible) {
+      setUsername(user.username);
+      setAvatar(user.avatarUrl || "");
       panY.setValue(height);
       resetPositionAnim.start();
     } else {
       closeAnim.start();
     }
-  }, [visible, panY, resetPositionAnim, closeAnim]);
-
-  useEffect(() => {
-    setUsername(user.username);
-    setAvatar(user.avatarUrl || "");
-  }, [user]);
+  }, [visible]);
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -117,12 +115,16 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       <Pressable style={styles.overlay} onPress={onClose} />
       <Animated.View
         {...panResponder.panHandlers}
-        style={[styles.modal, { transform: [{ translateY: panY }], zIndex: 9999, elevation: 20 }]}
+        style={[styles.modal, { transform: [{ translateY: panY }] }]}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}><Text style={styles.cancel}>Hủy</Text></TouchableOpacity>
+          <TouchableOpacity onPress={onClose}>
+            <Text style={styles.cancel}>Hủy</Text>
+          </TouchableOpacity>
           <Text style={styles.title}>Chỉnh sửa hồ sơ</Text>
-          <TouchableOpacity onPress={handleSave}><Text style={styles.save}>Lưu</Text></TouchableOpacity>
+          <TouchableOpacity onPress={handleSave}>
+            <Text style={styles.save}>Lưu</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.body}>
@@ -170,6 +172,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     paddingHorizontal: 20,
     paddingTop: 15,
+    zIndex: 9999,
+    elevation: 20,
   },
   header: {
     flexDirection: "row",
