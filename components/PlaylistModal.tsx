@@ -15,7 +15,6 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose }) => 
             onRequestClose={onClose}
         >
             <View style={styles.modalContainer}>
-                {/* Add your playlist modal content here */}
             </View>
         </Modal>
     );

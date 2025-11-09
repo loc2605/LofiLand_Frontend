@@ -44,6 +44,19 @@ const getFormattedTime = (ms: number) => {
   return `${min}:${sec < 10 ? '0' : ''}${sec}`;
 };
 
+// Hàm lưu lịch sử nghe nhạc
+const saveHistory = async (song: Song) => {
+  try {
+    await axiosInstance.post('/api/history', { song });
+  } catch (error: any) {
+    console.log(
+      'Error saving history:',
+      error.response?.data?.message || error.message
+    );
+  }
+};
+
+
 const Playingscreen: React.FC = () => {
   const { id, playlist } = useLocalSearchParams<{ id: string; playlist?: string }>();
   const parsedPlaylist: Song[] = playlist ? JSON.parse(playlist) : [];
@@ -81,28 +94,43 @@ const Playingscreen: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!song) return;
-    const loadAudio = async () => {
-      setLoading(true);
-      if (soundRef.current) {
-        try {
-          await soundRef.current.unloadAsync();
-        } catch {}
-      }
+  if (!song) return;
+
+  const loadAudio = async () => {
+    setLoading(true);
+    if (soundRef.current) {
       try {
-        const { sound } = await Audio.Sound.createAsync(
-          { uri: song.audioUrl },
-          { shouldPlay: true },
-          (s) => setStatus(s)
-        );
-        soundRef.current = sound;
-      } catch (err) {
-        console.log('Error loading audio:', err);
-      }
-      setLoading(false);
-    };
-    loadAudio();
-  }, [song]);
+        await soundRef.current.unloadAsync();
+      } catch {}
+    }
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: song.audioUrl },
+        { shouldPlay: true },
+        (s) => setStatus(s)
+      );
+      soundRef.current = sound;
+
+      saveHistory({
+        id: song.id,
+        title: song.title,
+        audioUrl: song.audioUrl,
+        album: {
+          coverUrl: song.album.coverUrl,
+        },
+        artist: {
+          name: song.artist.name,
+        },
+      });
+
+    } catch (err) {
+      console.log('Error loading audio:', err);
+    }
+    setLoading(false);
+  };
+  loadAudio();
+}, [song]);
+
 
 useEffect(() => {
   if (

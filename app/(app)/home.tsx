@@ -10,11 +10,12 @@ import * as SecureStore from 'expo-secure-store';
 import Header from '../../components/Header';
 import SearchBar from '../../components/SearchBar';
 import SuggestionItem from '../../components/SuggestionItem';
-import AlbumItem from '../../components/AlbumItem'; // Đảm bảo AlbumItem đã nhận prop onPress
+import AlbumItem from '../../components/AlbumItem';
 import ArtistItem from '../../components/ArtistItem';
 import BottomTabBar from '../../components/BottomTabBar';
 import RightDrawerMenu from '../../components/RightDrawerMenu';
 import EditProfileModal from '../../components/EditProfileModal';
+import HistoryList from '../../components/HistoryList';
 
 const { width } = Dimensions.get('window');
 
@@ -54,6 +55,11 @@ type Artist = {
   avatarUrl: string;
 };
 
+type HistoryItem = {
+  _id: string;
+  song: Song;
+};
+
 // ======================== Deezer API (qua Backend) ========================
 async function getMusicData() {
   try {
@@ -75,6 +81,7 @@ const HomeScreen: React.FC = () => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -83,38 +90,38 @@ const HomeScreen: React.FC = () => {
 
   const defaultProfileImage = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
-  // Load user info
-const loadUser = useCallback(async () => {
-  try {
-    const storedAuth = await SecureStore.getItemAsync('auth');
-    if (storedAuth) {
-      const parsed = JSON.parse(storedAuth);
-      const userData = parsed.user || {};
-      setUser({
-        username: userData.username || 'Người dùng',
-        email: userData.email || '',
-        avatarUrl: userData.avatarUrl || userData.avatar || defaultProfileImage,
-      });
-    } else {
-      router.replace('/(auth)/login');
+  // ====================== Load user ======================
+  const loadUser = useCallback(async () => {
+    try {
+      const storedAuth = await SecureStore.getItemAsync('auth');
+      if (storedAuth) {
+        const parsed = JSON.parse(storedAuth);
+        const userData = parsed.user || {};
+        setUser({
+          username: userData.username || 'Người dùng',
+          email: userData.email || '',
+          avatarUrl: userData.avatarUrl || userData.avatar || defaultProfileImage,
+        });
+      } else {
+        router.replace('/(auth)/login');
+      }
+    } catch (error) {
+      console.log('Error loading user:', error);
     }
-  } catch (error) {
-    console.log('Error loading user:', error);
-  }
-}, [router]);
+  }, [router]);
 
-  // Logout
-const handleLogout = async () => {
-  try {
-    await SecureStore.deleteItemAsync('auth');
-    setDrawerVisible(false);
-    setTimeout(() => router.replace('/(auth)/login'), 300);
-  } catch (error) {
-    console.log('Logout error:', error);
-  }
-};
+  // ====================== Logout ======================
+  const handleLogout = async () => {
+    try {
+      await SecureStore.deleteItemAsync('auth');
+      setDrawerVisible(false);
+      setTimeout(() => router.replace('/(auth)/login'), 300);
+    } catch (error) {
+      console.log('Logout error:', error);
+    }
+  };
 
-  // Fetch initial albums/artists once
+  // ====================== Fetch Albums & Artists ======================
   const fetchAlbumsAndArtists = useCallback(async () => {
     try {
       const [albumsRes, artistsRes] = await Promise.all([
@@ -146,7 +153,7 @@ const handleLogout = async () => {
     }
   }, []);
 
-  // Fetch songs (can be called for pull-to-refresh)
+  // ====================== Fetch Songs ======================
   const fetchSongs = useCallback(async () => {
     try {
       setLoading(true);
@@ -177,45 +184,71 @@ const handleLogout = async () => {
     }
   }, []);
 
-  // Initial fetch
+  // ====================== Fetch History ======================
+  const fetchHistory = useCallback(async () => {
+    try {
+      const res = await axiosInstance.get("/api/history");
+      setHistory(res.data.history || []);
+    } catch (error: any) {
+      console.log("Error fetching history:", error.response?.data || error.message);
+      setHistory([]);
+    }
+  }, []);
+
+  // ====================== Initial Fetch ======================
   useEffect(() => {
     const fetchData = async () => {
       await loadUser();
-      await fetchAlbumsAndArtists();
-      await fetchSongs();
+      await Promise.all([
+        fetchAlbumsAndArtists(),
+        fetchSongs(),
+        fetchHistory(),
+      ]);
     };
     fetchData();
-  }, [loadUser, fetchAlbumsAndArtists, fetchSongs]);
+  }, [loadUser, fetchAlbumsAndArtists, fetchSongs, fetchHistory]);
 
-  // Pull-to-refresh handler
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchSongs();
+  // ====================== Pull-to-refresh ======================
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await Promise.all([
+        loadUser(),
+        fetchAlbumsAndArtists(),
+        fetchSongs(),
+        fetchHistory(),
+      ]);
+    } catch (error) {
+      console.error("Refresh error:", error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
-const handleSongPress = (song: Song) => {
-  router.push({
-    pathname: '/playingscreen',
-    params: {
-      id: song.id,
-      playlist: JSON.stringify(songs),
-    },
-  });
-};
+  // ====================== Handlers ======================
+  const handleSongPress = (song: Song) => {
+    router.push({
+      pathname: '/playingscreen',
+      params: {
+        id: song.id,
+        playlist: JSON.stringify(songs),
+      },
+    });
+  };
 
-const handleAlbumPress = (album: Album) => {
-  router.push({
-    pathname: '/albumdetail',
-    params: {
-      albumId: album.id,
-      albumTitle: album.title,
-      albumArtist: album.artist.name,
-      albumCover: album.coverUrl,
-    },
-  });
-};
+  const handleAlbumPress = (album: Album) => {
+    router.push({
+      pathname: '/albumdetail',
+      params: {
+        albumId: album.id,
+        albumTitle: album.title,
+        albumArtist: album.artist.name,
+        albumCover: album.coverUrl,
+      },
+    });
+  };
 
-
+  // ====================== Loading State ======================
   if (loading && !refreshing) {
     return (
       <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -224,158 +257,172 @@ const handleAlbumPress = (album: Album) => {
     );
   }
 
+  // ====================== Render ======================
   return (
-  <SafeAreaView style={styles.safeArea}>
-    {drawerVisible && (
-      <TouchableOpacity
-        style={styles.overlay}
-        onPress={() => setDrawerVisible(false)}
-        activeOpacity={1}
-      />
-    )}
-
-    {/* Header + SearchBar cố định */}
-    {user && (
-      <Header
-        name={user.username}
-        profileImage={{ uri: user.avatarUrl || defaultProfileImage }}
-        onProfilePress={() => setDrawerVisible(true)}
-      />
-    )}
-    <SearchBar />
-
-    {/* Nội dung cuộn */}
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor="#9747FF"
-          colors={['#9747FF']}
+    <SafeAreaView style={styles.safeArea}>
+      {drawerVisible && (
+        <TouchableOpacity
+          style={styles.overlay}
+          onPress={() => setDrawerVisible(false)}
+          activeOpacity={1}
         />
-      }
-    >
-      <Text style={styles.sectionTitle}>Gợi ý cho bạn</Text>
-      <FlatList
-        horizontal
-        data={songs}
-        renderItem={({ item }) => (
-          <SuggestionItem
-            title={item.title}
-            artist={item.artist.name}
-            image={item.album.coverUrl || 'https://placehold.co/300x300'}
-            onPress={() => handleSongPress(item)}
+      )}
+
+      {/* Header */}
+      {user && (
+        <Header
+          name={user.username}
+          profileImage={{ uri: user.avatarUrl || defaultProfileImage }}
+          onProfilePress={() => setDrawerVisible(true)}
+        />
+      )}
+      <SearchBar />
+
+      {/* Scrollable content */}
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#9747FF"
+            colors={['#9747FF']}
           />
-        )}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingRight: 20 }}
-      />
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Album thịnh hành</Text>
-      </View>
-      <FlatList
-        horizontal
-        data={albums}
-        renderItem={({ item }) => (
-          <AlbumItem
-            title={item.title}
-            artist={item.artist.name}
-            image={item.coverUrl}
-            onPress={() => handleAlbumPress(item)}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingRight: 20 }}
-      />
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Nghệ sĩ nổi bật</Text>
-      </View>
-      <FlatList
-        horizontal
-        data={artists}
-        renderItem={({ item }) => (
-          <ArtistItem
-            id={item.id}
-            name={item.name}
-            image={item.avatarUrl}
-            onPress={() =>
-              router.push({
-                pathname: '/artistdetail',
-                params: {
-                  artistId: item.id,
-                  artistName: item.name,
-                  artistImage: item.avatarUrl,
-                },
-              })
-            }
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingRight: 20 }}
-      />
-
-      <View style={{ height: 100 }} />
-    </ScrollView>
-
-    {/* Drawer + EditModal + BottomTab */}
-    <RightDrawerMenu
-      visible={drawerVisible}
-      onClose={() => setDrawerVisible(false)}
-      user={user}
-      onEdit={() => {
-        setDrawerVisible(false);
-        setTimeout(() => setEditVisible(true), 300);
-      }}
-      onLogout={handleLogout}
-    />
-
-    <EditProfileModal
-      visible={editVisible}
-      user={user || { username: '', avatarUrl: '' }}
-      onClose={() => setEditVisible(false)}
-      onSave={async ({ username, imageFile }) => {
-        try {
-          const formData = new FormData();
-          if (username) formData.append('username', username);
-          if (imageFile) {
-            formData.append('avatar', {
-              uri: imageFile.uri,
-              name: imageFile.name || 'avatar.jpg',
-              type: imageFile.type || 'image/jpeg',
-            } as any);
-          }
-
-          const res = await axiosInstance.put('/api/users/profile', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-
-          setUser(res.data.user);
-          setEditVisible(false);
-          alert('Cập nhật hồ sơ thành công');
-        } catch (error: any) {
-          console.error('Error updating profile:', error);
-          alert(error.message || error.data?.message || 'Có lỗi xảy ra, thử lại sau');
         }
-      }}
-    />
+      >
+        <Text style={styles.sectionTitle}>Gợi ý cho bạn</Text>
+        <FlatList
+          horizontal
+          data={songs}
+          renderItem={({ item }) => (
+            <SuggestionItem
+              title={item.title}
+              artist={item.artist.name}
+              image={item.album.coverUrl || 'https://placehold.co/300x300'}
+              onPress={() => handleSongPress(item)}
+            />
+          )}
+          keyExtractor={(item) => item.id}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingRight: 20 }}
+        />
 
-    <BottomTabBar />
-  </SafeAreaView>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Album thịnh hành</Text>
+        </View>
+        <FlatList
+          horizontal
+          data={albums}
+          renderItem={({ item }) => (
+            <AlbumItem
+              title={item.title}
+              artist={item.artist.name}
+              image={item.coverUrl}
+              onPress={() => handleAlbumPress(item)}
+            />
+          )}
+          keyExtractor={(item) => item.id}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingRight: 20 }}
+          ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
+        />
 
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Nghệ sĩ nổi bật</Text>
+        </View>
+        <FlatList
+          horizontal
+          data={artists}
+          renderItem={({ item }) => (
+            <ArtistItem
+              id={item.id}
+              name={item.name}
+              image={item.avatarUrl}
+              onPress={() =>
+                router.push({
+                  pathname: '/artistdetail',
+                  params: {
+                    artistId: item.id,
+                    artistName: item.name,
+                    artistImage: item.avatarUrl,
+                  },
+                })
+              }
+            />
+          )}
+          keyExtractor={(item) => item.id}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingRight: 20 }}
+        />
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Nội dung bạn hay nghe gần đây</Text>
+        </View>
+        <HistoryList
+          history={history}
+          onSongPress={(song) =>
+            router.push({
+              pathname: '/playingscreen',
+              params: { id: song.id, playlist: JSON.stringify(history.map(h => h.song)) },
+            })
+          }
+        />
+
+        <View style={{ height: 100 }} />
+      </ScrollView>
+
+      {/* Drawer + EditModal + BottomTab */}
+      <RightDrawerMenu
+        visible={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+        user={user}
+        onEdit={() => {
+          setDrawerVisible(false);
+          setTimeout(() => setEditVisible(true), 300);
+        }}
+        onLogout={handleLogout}
+      />
+
+      <EditProfileModal
+        visible={editVisible}
+        user={user || { username: '', avatarUrl: '' }}
+        onClose={() => setEditVisible(false)}
+        onSave={async ({ username, imageFile }) => {
+          try {
+            const formData = new FormData();
+            if (username) formData.append('username', username);
+            if (imageFile) {
+              formData.append('avatar', {
+                uri: imageFile.uri,
+                name: imageFile.name || 'avatar.jpg',
+                type: imageFile.type || 'image/jpeg',
+              } as any);
+            }
+
+            const res = await axiosInstance.put('/api/users/profile', formData, {
+              headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            setUser(res.data.user);
+            setEditVisible(false);
+            alert('Cập nhật hồ sơ thành công');
+          } catch (error: any) {
+            console.error('Error updating profile:', error);
+            alert(error.message || error.data?.message || 'Có lỗi xảy ra, thử lại sau');
+          }
+        }}
+      />
+
+      <BottomTabBar />
+    </SafeAreaView>
   );
 };
 
 export default HomeScreen;
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#000' ,paddingHorizontal: 10 },
+  safeArea: { flex: 1, backgroundColor: '#000', paddingHorizontal: 10 },
   container: { flex: 1, backgroundColor: '#000', paddingHorizontal: 10 },
   sectionHeader: {
     flexDirection: 'row',

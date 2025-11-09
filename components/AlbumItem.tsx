@@ -38,12 +38,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   title: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFF',
   },
   artist: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#A9A9A9',
   },
 });

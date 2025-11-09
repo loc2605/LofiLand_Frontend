@@ -13,18 +13,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import axiosInstance from '../../utils/axiosInstance';
+import { useFollow } from '../../context/FollowContext';
 
 type Album = { id: string; title: string; coverUrl: string };
 type Song = {
   id: string;
   title: string;
   album: { id: string; title: string; coverUrl: string };
+  artist?: { id: string; name: string; avatarUrl: string };
 };
 type Artist = { id: string; name: string; avatarUrl: string };
 
 const ArtistDetailScreen: React.FC = () => {
   const { artistId, artistName, artistImage } = useLocalSearchParams();
   const router = useRouter();
+  const { followedArtists, follow, unfollow } = useFollow();
 
   const [artist, setArtist] = useState<Artist | null>(
     artistName && artistImage
@@ -34,55 +37,26 @@ const ArtistDetailScreen: React.FC = () => {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [tracks, setTracks] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
-  // Lấy chi tiết artist
+  const isFollowing = artist ? followedArtists.has(artist.id) : false;
+
   const fetchArtistDetail = useCallback(async () => {
     try {
       const res = await axiosInstance.get(`/api/deezer/artist/${artistId}/detail`);
-      setArtist(res.data.artist || artist);
-      setAlbums(res.data.albums || []);
-      setTracks(
-        (res.data.tracks || []).map((t: any) => ({
-          id: String(t.id),
-          title: t.title,
-          artist: {
-            id: t.artist?.id,
-            name: t.artist?.name || artist?.name || 'Unknown Artist',
-            avatarUrl: t.artist?.avatarUrl || artist?.avatarUrl || '',
-          },
-          album: {
-            id: t.album?.id,
-            title: t.album?.title || 'Unknown Album',
-            coverUrl: t.album?.coverUrl || '',
-          },
-          audioUrl: t.audioUrl || '',
-          duration: t.duration || 180,
-        }))
-      );
+      if (res.data.artist) setArtist(res.data.artist);
+      if (res.data.albums) setAlbums(res.data.albums);
+      if (res.data.tracks) setTracks(res.data.tracks);
     } catch (error) {
       console.log('Artist detail API error:', error);
     } finally {
       setLoading(false);
     }
-  }, [artistId, artist]);
-
-  // Kiểm tra xem đã follow hay chưa
-  const checkFollowing = useCallback(async () => {
-    if (!artistId) return;
-    try {
-      const res = await axiosInstance.get(`/api/follows/user/me`);
-      const followed = res.data.data.some((f: any) => f.artist.id === artistId);
-      setIsFollowing(followed);
-    } catch (err: any) {
-      console.log('Follow check error:', err);
-    }
   }, [artistId]);
 
   useEffect(() => {
     fetchArtistDetail();
-    checkFollowing();
-  }, [fetchArtistDetail, checkFollowing]);
+  }, [fetchArtistDetail]);
 
   const handleTrackPress = (track: Song) => {
     router.push({
@@ -92,39 +66,33 @@ const ArtistDetailScreen: React.FC = () => {
   };
 
   const handlePlayFirstTrack = () => {
-    if (tracks.length > 0) {
-      const firstTrack = tracks[0];
-      router.push({
-        pathname: '/playingscreen',
-        params: { id: firstTrack.id, playlist: JSON.stringify(tracks) },
-      });
+    if (tracks.length) {
+      handleTrackPress(tracks[0]);
     }
   };
 
-  // Follow / Unfollow artist
   const handleFollow = async () => {
-    if (!artist) return;
+    if (!artist || !artist.id) return;
+    setFollowLoading(true);
     try {
       if (isFollowing) {
-        // Gửi artistId để backend tự lấy userId từ token
         await axiosInstance.post('/api/follows/unfollow', { artistId: artist.id });
-        setIsFollowing(false);
+        unfollow(artist.id);
       } else {
         await axiosInstance.post('/api/follows/follow', {
-          artist: {
-            id: artist.id,
-            name: artist.name,
-            avatarUrl: artist.avatarUrl,
-          },
+          artist: { id: artist.id, name: artist.name || '', avatarUrl: artist.avatarUrl || '' },
         });
-        setIsFollowing(true);
+        follow(artist.id);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.log('Follow/Unfollow error:', err);
+    } finally {
+      setFollowLoading(false);
     }
   };
 
-  if (loading && !artist) {
+
+  if (loading || !artist) {
     return (
       <SafeAreaView style={styles.center}>
         <ActivityIndicator size="large" color="#9747FF" />
@@ -134,43 +102,44 @@ const ArtistDetailScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {artist && (
-        <View style={styles.fixedHeader}>
-          <ImageBackground
-            source={{ uri: artist.avatarUrl }}
-            style={StyleSheet.absoluteFill}
-            blurRadius={10}
-            resizeMode="cover"
-          />
-          <View style={styles.overlay} />
+      <View style={styles.fixedHeader}>
+        <ImageBackground
+          source={{ uri: artist.avatarUrl }}
+          style={StyleSheet.absoluteFill}
+          blurRadius={15}
+        />
+        <View style={styles.overlay} />
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={26} color="#FFF" />
+          </TouchableOpacity>
+        </View>
 
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={26} color="#FFF" />
-            </TouchableOpacity>
-          </View>
+        <View style={styles.artistHeader}>
+          <Image source={{ uri: artist.avatarUrl }} style={styles.artistAvatar} />
+          <Text style={styles.artistName}>{artist.name}</Text>
 
-          <View style={styles.artistHeader}>
-            <Image source={{ uri: artist.avatarUrl }} style={styles.artistAvatar} />
-            <Text style={styles.artistName}>{artist.name}</Text>
-
-            <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={[styles.followButton, isFollowing ? styles.following : styles.notFollowing]}
-                onPress={handleFollow}
-              >
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={[styles.followButton, isFollowing ? styles.following : styles.notFollowing]}
+              onPress={handleFollow}
+              disabled={followLoading}
+            >
+              {followLoading ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
                 <Text style={styles.followText}>
                   {isFollowing ? 'Đang theo dõi' : 'Theo dõi'}
                 </Text>
-              </TouchableOpacity>
+              )}
+            </TouchableOpacity>
 
-              <TouchableOpacity style={styles.playButton} onPress={handlePlayFirstTrack}>
-                <Ionicons name="play" size={30} color="#000" />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.playButton} onPress={handlePlayFirstTrack}>
+              <Ionicons name="play" size={30} color="#000" />
+            </TouchableOpacity>
           </View>
         </View>
-      )}
+      </View>
 
       <FlatList
         data={tracks}
