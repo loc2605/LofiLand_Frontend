@@ -8,10 +8,11 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
-  Pressable,
   Easing,
   PanResponder,
   Alert,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesome } from "@expo/vector-icons";
@@ -25,12 +26,7 @@ interface EditProfileModalProps {
   onSave: (updatedUser: { username: string; avatarUrl?: string; imageFile?: any }) => void;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({
-  visible,
-  user,
-  onClose,
-  onSave,
-}) => {
+const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, user, onClose, onSave }) => {
   const [username, setUsername] = useState(user.username);
   const [avatar, setAvatar] = useState(user.avatarUrl || "");
   const [imageFile, setImageFile] = useState<any>(null);
@@ -65,13 +61,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     })
   ).current;
 
-  // Chỉ reset state khi modal mở, tránh reset khi gõ
+  // Reset state khi modal mở
   useEffect(() => {
     if (visible) {
-      setUsername(user.username);
-      setAvatar(user.avatarUrl || "");
       panY.setValue(height);
       resetPositionAnim.start();
+      setUsername(user.username);
+      setAvatar(user.avatarUrl || "");
     } else {
       closeAnim.start();
     }
@@ -112,7 +108,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   return (
     <View style={StyleSheet.absoluteFill}>
-      <Pressable style={styles.overlay} onPress={onClose} />
+      {/* Bấm ra ngoài để tắt bàn phím, modal vẫn mở */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.overlay} />
+      </TouchableWithoutFeedback>
+
       <Animated.View
         {...panResponder.panHandlers}
         style={[styles.modal, { transform: [{ translateY: panY }] }]}
