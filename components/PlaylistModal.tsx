@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Modal, StyleSheet } from 'react-native';
+import { Modal, StyleSheet, View } from 'react-native';
 
 interface PlaylistModalProps {
     isVisible: boolean;

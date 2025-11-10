@@ -1,20 +1,24 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import {
-  StyleSheet, Text, View, ScrollView, FlatList,
-  TouchableOpacity, ActivityIndicator, Dimensions, RefreshControl
-} from 'react-native';
-import axiosInstance from '../../utils/axiosInstance';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import Header from '../../components/Header';
-import SearchBar from '../../components/SearchBar';
-import SuggestionItem from '../../components/SuggestionItem';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator, Dimensions,
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet, Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AlbumItem from '../../components/AlbumItem'; // Đảm bảo AlbumItem đã nhận prop onPress
 import ArtistItem from '../../components/ArtistItem';
-import BottomTabBar from '../../components/BottomTabBar';
-import RightDrawerMenu from '../../components/RightDrawerMenu';
 import EditProfileModal from '../../components/EditProfileModal';
+import Header from '../../components/Header';
+import RightDrawerMenu from '../../components/RightDrawerMenu';
+import SearchBar from '../../components/SearchBar';
+import SuggestionItem from '../../components/SuggestionItem';
+import axiosInstance from '../../utils/axiosInstance';
 
 const { width } = Dimensions.get('window');
 
@@ -366,7 +370,7 @@ const handleAlbumPress = (album: Album) => {
       }}
     />
 
-    <BottomTabBar />
+    {/* <BottomTabBar /> */}
   </SafeAreaView>
 
   );
@@ -375,7 +379,7 @@ const handleAlbumPress = (album: Album) => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#000' ,paddingHorizontal: 10 },
+  safeArea: { flex: 1, backgroundColor: '#000' ,paddingHorizontal: 5 },
   container: { flex: 1, backgroundColor: '#000', paddingHorizontal: 10 },
   sectionHeader: {
     flexDirection: 'row',
