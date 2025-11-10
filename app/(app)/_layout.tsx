@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { FollowProvider } from '../../context/FollowContext';
 
-export default function AppLayout() {
+export default function AppGroupLayout() {
   return (
     <FollowProvider>
       <Stack
