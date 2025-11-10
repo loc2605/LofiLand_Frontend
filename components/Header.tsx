@@ -32,8 +32,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 10,
-    marginBottom: 20,
+    marginTop: 5,
+    paddingHorizontal: 10,
+    marginBottom: 15,
   },
   greeting: {
     fontSize: 14,

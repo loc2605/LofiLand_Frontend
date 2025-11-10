@@ -143,7 +143,7 @@ export default function SearchScreen() {
           { icon: "musical-notes-outline", label: "Pop" },
           { icon: "flash-outline", label: "Hip Hop" },
           { icon: "rocket-outline", label: "EDM" },
-          { icon: "guitar-outline", label: "Rock" },
+          { icon: "musical-notes-outline", label: "Rock" },
           { icon: "leaf-outline", label: "Indie" },
         ].map((c) => (
           <TouchableOpacity

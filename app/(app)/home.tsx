@@ -19,7 +19,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import Header from '../../components/Header';
 import SearchBar from '../../components/SearchBar';
-import BottomTabBar from '../../components/BottomTabBar';
+// import BottomTabBar from '../../components/BottomTabBar';
 import RightDrawerMenu from '../../components/RightDrawerMenu';
 import EditProfileModal from '../../components/EditProfileModal';
 import HistoryList from '../../components/HistoryList';
@@ -445,7 +445,6 @@ const HomeScreen: React.FC = () => {
           }
         }}
       />
-      <BottomTabBar />
     </SafeAreaView>
   );
 };
