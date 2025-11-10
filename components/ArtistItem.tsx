@@ -44,7 +44,7 @@ const ArtistItem: React.FC<ArtistItemProps> = ({ id, name, image, onPress }) => 
       <TouchableOpacity
         style={[styles.followButton, isFollowing ? styles.following : styles.notFollowing]}
         onPress={handleFollow}
-        disabled={loading || !id} // disable khi đang loading hoặc chưa có id
+        disabled={loading || !id}
       >
         {loading ? (
           <ActivityIndicator size="small" color="#FFF" />
