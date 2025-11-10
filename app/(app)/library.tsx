@@ -123,31 +123,79 @@ export default function LibraryScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#121212" },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#121212",
+  },
   header: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
+    paddingVertical: 10,
     backgroundColor: "#121212",
-    borderBottomColor: "#1f1f1f",
+    borderBottomColor: "#1F1F1F",
     borderBottomWidth: 0.5,
   },
-  headerTitle: { color: "white", fontSize: 22, fontWeight: "800" },
-  section: { paddingHorizontal: 16, paddingTop: 20 },
-  sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  sectionTitle: { marginLeft: 8, color: "white", fontSize: 20, fontWeight: 'bold' },
-  songItem: { flexDirection: "row", alignItems: "center", paddingVertical: 10 },
-  songImage: { width: 60, height: 60, borderRadius: 4, marginRight: 12 },
-  songTitle: { color: "white", fontSize: 15, fontWeight: "700" },
-  songArtist: { color: '#AAA', marginTop: 2, fontSize: 14 },
+  headerTitle: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "800",
+  },
+  section: {
+    paddingHorizontal: 16,
+    paddingTop: 20,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    marginLeft: 8,
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  songItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  songImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  songTitle: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  songArtist: {
+    color: "#9CA3AF",
+    marginTop: 2,
+    fontSize: 14,
+  },
   playlistCard: {
     width: "48%",
     marginBottom: 14,
-    backgroundColor: "#1b1b1b",
+    backgroundColor: "#1B1B1B",
     borderRadius: 12,
     overflow: "hidden",
   },
-  playlistImage: { width: "100%", height: 140 },
-  playlistTitle: { color: "white", fontWeight: "700", fontSize: 15 },
-  playlistCount: { color: "#9ca3af", marginTop: 3, fontSize: 13 },
+  playlistImage: {
+    width: "100%",
+    height: 140,
+  },
+  playlistTitle: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  playlistCount: {
+    color: "#9CA3AF",
+    marginTop: 3,
+    fontSize: 13,
+  },
 });
+
