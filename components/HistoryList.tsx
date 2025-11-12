@@ -88,7 +88,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ history, loading = false, onS
     );
   }
 
-  const displayedHistory = showAll ? history : history.slice(0, 4);
+  const displayedHistory = showAll ? history : history.slice(0, 5);
 
   return (
     <>
@@ -126,7 +126,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ history, loading = false, onS
         showsVerticalScrollIndicator={false}
         scrollEnabled={false}
         ListFooterComponent={
-          history.length > 4 ? (
+          history.length > 5 ? (
             <TouchableOpacity onPress={() => setShowAll(!showAll)} style={styles.showMoreButton}>
               <Text style={styles.showMoreText}>
                 {showAll ? 'Ẩn bớt' : 'Xem thêm'}
