@@ -20,12 +20,12 @@ const OptionMenu: React.FC<OptionMenuProps> = ({
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPressOut={onClose}>
         <View style={styles.modalContent}>
           <TouchableOpacity style={styles.optionButton} onPress={onAddToPlaylist}>
-            <Ionicons name="add-circle-outline" size={24} color="#ffffff" style={{ marginRight: 10 }} />
+            <Ionicons name="add-circle-outline" size={24} color="#FFF" style={{ marginRight: 10 }} />
             <Text style={styles.optionText}>Thêm vào Playlist</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.optionButton} onPress={onAddToFavorites}>
-            <Ionicons name="heart" size={24} color="#FF3B30" style={{ marginRight: 10 }} />
+            <Ionicons name="heart" size={24} color="#A855F7" style={{ marginRight: 10 }} />
             <Text style={styles.optionText}>Thêm vào Yêu thích</Text>
           </TouchableOpacity>
         </View>

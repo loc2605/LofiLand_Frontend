@@ -18,7 +18,7 @@ import axiosInstance from "../../utils/axiosInstance";
 type Song = {
   id: string;
   title: string;
-  artist: { name: string; avatarUrl: string };
+  artist: { name: string; avatarUrl?: string };
   album: { title: string; coverUrl: string };
   audioUrl: string;
 };
@@ -40,11 +40,25 @@ export default function LibraryScreen() {
   const [query, setQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
 
-
   const fetchFavorites = async () => {
     try {
       const res = await axiosInstance.get("/api/favorites");
-      if (res.data.success) setSongs(res.data.songs);
+      if (res.data.success) {
+        const songsData: Song[] = res.data.songs.map((fav: any) => ({
+          id: fav.id,
+          title: fav.title,
+          artist: {
+            name: fav.artist.name,
+            avatarUrl: fav.artist.avatarUrl,
+          },
+          album: {
+            title: fav.album.title,
+            coverUrl: fav.album.coverUrl,
+          },
+          audioUrl: fav.audioUrl,
+        }));
+        setSongs(songsData);
+      }
     } catch (err: any) {
       console.error("Lỗi tải danh sách yêu thích:", err.message);
     } finally {
@@ -75,7 +89,6 @@ export default function LibraryScreen() {
     );
   };
 
-
   useEffect(() => {
     fetchFavorites();
   }, []);
@@ -90,10 +103,12 @@ export default function LibraryScreen() {
 
   const displayedFavorites = showAll ? filteredLiked : filteredLiked.slice(0, 4);
 
+    const handleSongPress = (song: Song) => {
+    router.push({ pathname: '/playingscreen', params: { id: song.id, playlist: JSON.stringify(songs) } });
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Bộ Sưu Tập</Text>
       </View>
@@ -131,47 +146,30 @@ export default function LibraryScreen() {
                       Chưa có bài hát yêu thích nào
                     </Text>
                   ) : (
-                    <FlatList
-                      data={displayedFavorites}
-                      keyExtractor={(s) => s.id}
-                      ItemSeparatorComponent={() => (
-                        <View style={{ height: 1, backgroundColor: "#1f1f1f", marginVertical: 6 }} />
-                      )}
-                      renderItem={({ item: s }) => (
-                        <TouchableOpacity
-                          activeOpacity={0.85}
-                          onPress={() =>
-                            router.push({
-                              pathname: "/(app)/playingscreen",
-                              params: { id: s.id },
-                            })
-                          }
-                          style={styles.songItem}
-                        >
-                          <Image source={{ uri: s.album.coverUrl }} style={styles.songImage} />
-                          <View style={{ flex: 1 }}>
-                            <Text style={styles.songTitle} numberOfLines={1}>{s.title}</Text>
-                            <Text style={styles.songArtist} numberOfLines={1}>{s.artist.name}</Text>
-                          </View>
-                          <TouchableOpacity onPress={() => handleRemoveFavorite(s.id, s.title)} style={{ padding: 8 }}>
-                            <Ionicons name="heart" size={18} color="#A855F7" />
-                          </TouchableOpacity>
-
-                        </TouchableOpacity>
-                      )}
-                      ListFooterComponent={
-                        filteredLiked.length > 4 ? (
+                      <FlatList
+                        data={displayedFavorites}
+                        keyExtractor={(s) => s.id}
+                        ItemSeparatorComponent={() => (
+                          <View style={{ height: 1, backgroundColor: "#1f1f1f", marginVertical: 6 }} />
+                        )}
+                        renderItem={({ item: s }) => (
                           <TouchableOpacity
-                            onPress={() => setShowAll(!showAll)}
-                            style={{ marginTop: 8, alignItems: 'center', paddingVertical: 6 }}
+                            activeOpacity={0.85}
+                            onPress={() => handleSongPress(s)}
+                            style={styles.songItem}
                           >
-                            <Text style={{ color: '#A855F7', fontWeight: '500' }}>
-                              {showAll ? 'Ẩn bớt' : 'Xem thêm'}
-                            </Text>
+                            <Image source={{ uri: s.album.coverUrl }} style={styles.songImage} />
+                            <View style={{ flex: 1 }}>
+                              <Text style={styles.songTitle} numberOfLines={1}>{s.title}</Text>
+                              <Text style={styles.songArtist} numberOfLines={1}>{s.artist.name}</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => handleRemoveFavorite(s.id, s.title)} style={{ padding: 8 }}>
+                              <Ionicons name="heart" size={18} color="#A855F7" />
+                            </TouchableOpacity>
                           </TouchableOpacity>
-                        ) : null
-                      }
-                    />
+                        )}
+                      />
+
                   )}
                 </View>
               );
@@ -192,24 +190,11 @@ export default function LibraryScreen() {
                   columnWrapperStyle={{ justifyContent: "space-between" }}
                   contentContainerStyle={{ paddingTop: 4 }}
                   renderItem={({ item: p }) => (
-                    <TouchableOpacity
-                      activeOpacity={0.85}
-                      style={styles.playlistCard}
-                    >
-                      <Image
-                        source={{ uri: p.cover }}
-                        style={styles.playlistImage}
-                      />
+                    <TouchableOpacity activeOpacity={0.85} style={styles.playlistCard}>
+                      <Image source={{ uri: p.cover }} style={styles.playlistImage} />
                       <View style={{ padding: 10 }}>
-                        <Text
-                          style={styles.playlistTitle}
-                          numberOfLines={1}
-                        >
-                          {p.name}
-                        </Text>
-                        <Text style={styles.playlistCount}>
-                          {p.count} bài hát
-                        </Text>
+                        <Text style={styles.playlistTitle} numberOfLines={1}>{p.name}</Text>
+                        <Text style={styles.playlistCount}>{p.count} bài hát</Text>
                       </View>
                     </TouchableOpacity>
                   )}
