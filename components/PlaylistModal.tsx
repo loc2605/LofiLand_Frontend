@@ -39,6 +39,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song 
   const [newDesc, setNewDesc] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
 
+  // Fetch playlists từ backend
   const fetchPlaylists = async () => {
     setLoading(true);
     try {
@@ -55,6 +56,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song 
     if (isVisible) fetchPlaylists();
   }, [isVisible]);
 
+  // Thêm song vào playlist
   const handleAddToPlaylist = async (playlistId: string) => {
     if (!song) {
       Alert.alert('Lỗi', 'Không có bài hát để thêm');
@@ -62,11 +64,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song 
     }
 
     try {
-      const res = await axiosInstance.post(
-        `/api/playlists/${playlistId}/songs`,
-        { song } // ✔️ gửi FULL OBJECT
-      );
-
+      const res = await axiosInstance.post(`/api/playlists/${playlistId}/songs`, { song });
       if (res.data.success) {
         Alert.alert('Thành công', 'Bài hát đã được thêm vào playlist');
         handleClose();
@@ -80,6 +78,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song 
     }
   };
 
+  // Tạo playlist mới
   const handleCreatePlaylist = async () => {
     if (!newTitle.trim()) {
       Alert.alert('Lỗi', 'Tên playlist không được để trống');
@@ -87,10 +86,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song 
     }
     setCreating(true);
     try {
-      await axiosInstance.post('/api/playlists', {
-        title: newTitle,
-        description: newDesc,
-      });
+      await axiosInstance.post('/api/playlists', { title: newTitle, description: newDesc });
       Alert.alert('Thành công', 'Playlist đã được tạo');
       setNewTitle('');
       setNewDesc('');
@@ -144,11 +140,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song 
                 onChangeText={setNewDesc}
               />
               <TouchableOpacity style={styles.actionButton} onPress={handleCreatePlaylist}>
-                {creating ? (
-                  <ActivityIndicator color="#FFF" />
-                ) : (
-                  <Text style={styles.actionButtonText}>Tạo playlist</Text>
-                )}
+                {creating ? <ActivityIndicator color="#FFF" /> : <Text style={styles.actionButtonText}>Tạo playlist</Text>}
               </TouchableOpacity>
             </View>
           )}
@@ -189,11 +181,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song 
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.9)',
-    justifyContent: 'flex-end',
-  },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'flex-end' },
   modalContent: {
     flex: 1,
     backgroundColor: SPOTIFY_DARK_BG,
@@ -203,19 +191,11 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingHorizontal: 15,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 50,
-    paddingBottom: 10,
-  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 50, paddingBottom: 10 },
   headerButton: { minWidth: 50 },
   headerButtonText: { color: TEXT_COLOR, fontSize: 16 },
   headerTitle: { color: TEXT_COLOR, fontSize: 18, fontWeight: 'bold' },
-  centeredForm: {
-    paddingVertical: 10,
-  },
+  centeredForm: { paddingVertical: 10 },
   input: {
     backgroundColor: '#2E2E2E',
     color: TEXT_COLOR,
@@ -228,7 +208,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     backgroundColor: 'transparent',
-    borderColor: '#9747FF',
+    borderColor: PRIMARY_COLOR,
     borderWidth: 1,
     borderRadius: 20,
     paddingVertical: 12,
@@ -237,11 +217,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     alignSelf: 'center',
   },
-  actionButtonText: {
-    color: TEXT_COLOR,
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  actionButtonText: { color: TEXT_COLOR, fontSize: 16, fontWeight: '600' },
   playlistItem: {
     paddingVertical: 20,
     paddingHorizontal: 15,
@@ -251,11 +227,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#333',
     borderBottomWidth: 1,
   },
-  playlistTitle: {
-    color: TEXT_COLOR,
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  playlistTitle: { color: TEXT_COLOR, fontSize: 16, fontWeight: '600' },
 });
 
 export default PlaylistModal;
