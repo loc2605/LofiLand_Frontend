@@ -46,10 +46,12 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song 
       const res = await axiosInstance.get('/api/playlists');
       setPlaylists(res.data.playlists || []);
     } catch (error: any) {
-      console.log('Error fetching playlists:', error);
-      Alert.alert('Lỗi', error.message || 'Không thể lấy danh sách playlist');
+      console.log('Error fetching playlists:', error.response || error.message);
+      const msg = error.response?.data?.message || 'Không thể lấy danh sách playlist';
+      Alert.alert('Lỗi', msg);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -65,16 +67,21 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song 
 
     try {
       const res = await axiosInstance.post(`/api/playlists/${playlistId}/songs`, { song });
+
       if (res.data.success) {
-        Alert.alert('Thành công', 'Bài hát đã được thêm vào playlist');
+        Alert.alert('Thành công', res.data.message || 'Bài hát đã được thêm vào playlist');
         handleClose();
       } else {
-        Alert.alert('Lỗi', res.data.message || 'Không thể thêm bài hát');
+        Alert.alert('Thông báo', res.data.message || 'Không thể thêm bài hát');
       }
     } catch (error: any) {
-      console.log('Error adding song to playlist:', error.response?.data || error.message);
+      console.log('Error adding song to playlist:', error.response || error.message);
       const msg = error.response?.data?.message || 'Lỗi server';
-      Alert.alert('Lỗi', msg);
+      if (msg.includes('Bài hát đã có trong playlist')) {
+        Alert.alert('Thông báo', 'Bài hát này đã có trong playlist');
+      } else {
+        Alert.alert('Lỗi', msg);
+      }
     }
   };
 
@@ -86,17 +93,23 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song 
     }
     setCreating(true);
     try {
-      await axiosInstance.post('/api/playlists', { title: newTitle, description: newDesc });
-      Alert.alert('Thành công', 'Playlist đã được tạo');
-      setNewTitle('');
-      setNewDesc('');
-      setShowCreateForm(false);
-      fetchPlaylists();
+      const res = await axiosInstance.post('/api/playlists', { title: newTitle, description: newDesc });
+      if (res.data.success) {
+        Alert.alert('Thành công', res.data.message || 'Playlist đã được tạo');
+        setNewTitle('');
+        setNewDesc('');
+        setShowCreateForm(false);
+        fetchPlaylists();
+      } else {
+        Alert.alert('Thông báo', res.data.message || 'Không thể tạo playlist');
+      }
     } catch (error: any) {
-      console.log('Error creating playlist:', error);
-      Alert.alert('Lỗi', error.message || 'Không thể tạo playlist');
+      console.log('Error creating playlist:', error.response || error.message);
+      const msg = error.response?.data?.message || 'Lỗi server';
+      Alert.alert('Lỗi', msg);
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
   };
 
   const handleClose = () => {

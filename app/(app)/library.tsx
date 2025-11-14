@@ -155,11 +155,41 @@ export default function LibraryScreen() {
     setShowPlaylistCount(4);
   }, [query, songs, playlists]);
 
+  // --- Navigation ---
   const handleSongPress = (song: Song) => {
     router.push({ pathname: "/playingscreen", params: { id: song.id, playlist: JSON.stringify(songs) } });
   };
   const handlePlaylistPress = (playlist: Playlist) => {
     router.push({ pathname: "/playlistdetail", params: { id: playlist.id } });
+  };
+
+  // --- Delete playlist ---
+  const handleDeletePlaylist = (playlist: Playlist) => {
+    Alert.alert(
+      "Xóa playlist",
+      `Bạn có chắc muốn xóa playlist "${playlist.name}" không?`,
+      [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Xóa",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await axiosInstance.delete(`/api/playlists/${playlist.id}`);
+              if (res.data.success) {
+                Alert.alert("Thành công", "Playlist đã được xóa");
+                fetchPlaylists();
+              } else {
+                Alert.alert("Lỗi", res.data.message || "Không thể xóa playlist");
+              }
+            } catch (err: any) {
+              console.error("Lỗi xóa playlist:", err.message);
+              Alert.alert("Lỗi", err.message || "Không thể xóa playlist");
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -176,6 +206,7 @@ export default function LibraryScreen() {
         <FlatList
           data={[{ key: "liked" }, { key: "playlists" }]}
           keyExtractor={(i) => i.key}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 10 }}
           refreshControl={
             <RefreshControl
@@ -190,7 +221,7 @@ export default function LibraryScreen() {
               return (
                 <View style={styles.section}>
                   <View style={styles.sectionHeader}>
-                    <Ionicons name="heart" size={20} color="#A855F7" />
+                    <Ionicons name="heart-outline" size={20} color="#A855F7" />
                     <Text style={styles.sectionTitle}>Bài hát yêu thích</Text>
                   </View>
                   {filteredLiked.length === 0 ? (
@@ -199,6 +230,7 @@ export default function LibraryScreen() {
                     <FlatList
                       data={displayedFavorites}
                       keyExtractor={(s, index) => `${s.id}-${index}`}
+                      nestedScrollEnabled={true}
                       ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: "#1f1f1f", marginVertical: 6 }} />}
                       renderItem={({ item: s }) => (
                         <TouchableOpacity
@@ -231,7 +263,7 @@ export default function LibraryScreen() {
               );
             }
 
-            // --- Playlist section ---
+            // --- Playlist section with delete icon ---
             return (
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
@@ -243,19 +275,35 @@ export default function LibraryScreen() {
                   numColumns={2}
                   keyExtractor={(p, index) => `${p.id}-${index}`}
                   columnWrapperStyle={{ justifyContent: "space-between" }}
+                  nestedScrollEnabled={true}
                   contentContainerStyle={{ paddingTop: 4 }}
                   renderItem={({ item: p }) => (
-                    <TouchableOpacity activeOpacity={0.85} style={styles.playlistCard} onPress={() => handlePlaylistPress(p)}>
-                      <Image source={{ uri: p.cover }} style={styles.playlistImage} />
-                      <View style={{ padding: 10 }}>
-                        <Text style={styles.playlistTitle} numberOfLines={1}>{p.name}</Text>
-                        <Text style={styles.playlistCount}>{p.count} bài hát</Text>
-                      </View>
-                    </TouchableOpacity>
+                    <View style={styles.playlistCard}>
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        style={{ flex: 1 }}
+                        onPress={() => handlePlaylistPress(p)}
+                      >
+                        <Image source={{ uri: p.cover }} style={styles.playlistImage} />
+                        <View style={{ padding: 10 }}>
+                          <Text style={styles.playlistTitle} numberOfLines={1}>{p.name}</Text>
+                          <Text style={styles.playlistCount}>{p.count} bài hát</Text>
+                        </View>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleDeletePlaylist(p)}
+                        style={styles.deleteIcon}
+                      >
+                        <Ionicons name="trash-outline" size={20} color="#F87171" />
+                      </TouchableOpacity>
+                    </View>
                   )}
                   ListFooterComponent={() =>
                     playlists.length > 4 ? (
-                      <TouchableOpacity style={{ marginTop: 10, alignSelf: "center", padding: 10 }} onPress={handleShowMorePlaylist}>
+                      <TouchableOpacity
+                        style={{ marginTop: 10, alignSelf: "center", padding: 10 }}
+                        onPress={handleShowMorePlaylist}
+                      >
                         <Text style={{ color: "#A855F7", fontWeight: "600" }}>
                           {showPlaylistCount >= playlists.length ? "Thu gọn" : "Xem thêm"}
                         </Text>
@@ -287,4 +335,14 @@ const styles = StyleSheet.create({
   playlistImage: { width: "100%", height: 140 },
   playlistTitle: { color: "#FFFFFF", fontWeight: "700", fontSize: 15 },
   playlistCount: { color: "#9CA3AF", marginTop: 3, fontSize: 13 },
+  deleteIcon: {
+    position: "absolute",
+    right: 8,
+    bottom: 8,
+    backgroundColor: "#1B1B1B",
+    padding: 6,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

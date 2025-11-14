@@ -73,26 +73,50 @@ export default function PlaylistDetailScreen() {
     }
   };
 
-    const handleToggleFavorite = async (song: Song) => {
+  const handleToggleFavorite = async (song: Song) => {
     try {
-        if (favorites.includes(song.id)) {
-        // Xóa
+      if (favorites.includes(song.id)) {
         await axiosInstance.delete(`/api/favorites/${song.id}`);
         setFavorites((prev) => prev.filter((id) => id !== song.id));
         Alert.alert("Đã xóa", `"${song.title}" đã được xóa khỏi yêu thích`);
-        } else {
-        // Thêm
+      } else {
         await axiosInstance.post("/api/favorites", { songId: song.id });
         setFavorites((prev) => [...prev, song.id]);
         Alert.alert("Đã thêm", `"${song.title}" đã được thêm vào yêu thích`);
-        }
+      }
     } catch (err: any) {
-        console.error("Lỗi thêm/xóa favorites", err.response?.data || err.message);
-        Alert.alert("Lỗi", "Không thể cập nhật yêu thích, thử lại sau.");
+      console.error("Lỗi thêm/xóa favorites", err.response?.data || err.message);
+      Alert.alert("Lỗi", "Không thể cập nhật yêu thích, thử lại sau.");
     }
-    };
+  };
 
-
+  const handleDeleteFromPlaylist = async (song: Song) => {
+    Alert.alert(
+      "Xóa bài hát",
+      `Bạn có chắc muốn xóa "${song.title}" khỏi playlist này?`,
+      [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Xóa",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await axiosInstance.delete(`/api/playlists/${id}/songs/${song.id}`);
+              if (res.data.success) {
+                setSongs((prev) => prev.filter((s) => s.id !== song.id));
+                Alert.alert("Thành công", `"${song.title}" đã được xóa khỏi playlist`);
+              } else {
+                Alert.alert("Lỗi", res.data.message || "Không thể xóa bài hát");
+              }
+            } catch (err: any) {
+              console.error("Lỗi xóa bài hát:", err.message);
+              Alert.alert("Lỗi", "Không thể xóa bài hát, thử lại sau.");
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const handleSongPress = (song: Song) => {
     router.push({
@@ -111,12 +135,12 @@ export default function PlaylistDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-    <View style={styles.headerContainer}>
-    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-    </TouchableOpacity>
-    <Text style={styles.header}>{playlistName}</Text>
-    </View>
+      <View style={styles.headerContainer}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={styles.header}>{playlistName}</Text>
+      </View>
 
       <FlatList
         data={songs}
@@ -133,16 +157,28 @@ export default function PlaylistDetailScreen() {
               <Text style={styles.songTitle}>{item.title}</Text>
               <Text style={styles.songArtist}>{item.artist.name}</Text>
             </View>
-            <TouchableOpacity
-              onPress={() => handleToggleFavorite(item)}
-              style={{ padding: 8 }}
-            >
-              <Ionicons
-                name={favorites.includes(item.id) ? "heart" : "heart-outline"}
-                size={22}
-                color="#A855F7"
-              />
-            </TouchableOpacity>
+            <View style={{ flexDirection: "row" }}>
+              <TouchableOpacity
+                onPress={() => handleToggleFavorite(item)}
+                style={{ padding: 8 }}
+              >
+                <Ionicons
+                  name={favorites.includes(item.id) ? "heart" : "heart-outline"}
+                  size={22}
+                  color="#A855F7"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleDeleteFromPlaylist(item)}
+                style={{ padding: 8 }}
+              >
+                <Ionicons
+                  name="trash-outline"
+                  size={22}
+                  color="#F87171"
+                />
+              </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         )}
         ListEmptyComponent={() => (
@@ -193,5 +229,3 @@ const styles = StyleSheet.create({
   },
   emptyText: { color: "#9CA3AF", textAlign: "center", marginTop: 40, fontSize: 16 },
 });
-
-
