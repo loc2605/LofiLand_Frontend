@@ -22,7 +22,7 @@ Dự án được phát triển nhằm mang lại **giao diện thân thiện**,
 
 LofiLand cung cấp các tính năng cốt lõi sau để người dùng có trải nghiệm nghe nhạc trọn vẹn:
 
-### 🎧 Quản Lý Tài Khoản & Người Dùng
+### Quản Lý Tài Khoản & Người Dùng
 
 - **Đăng Ký, Đăng Nhập:** Tạo tài khoản và đăng nhập để cá nhân hóa trải nghiệm.
 - **Cập Nhật Thông Tin Cá Nhân:** Chỉnh sửa thông tin hồ sơ người dùng.
@@ -75,24 +75,24 @@ npx expo start
 
 Sau khi chạy lệnh, bạn có thể chọn cách mở ứng dụng:
 
--  **Expo Go:** Mở nhanh trên thiết bị di động qua ứng dụng Expo Go.
--  **Android Emulator:** Mở trên trình giả lập Android.
--  **iOS Simulator:** Mở trên trình giả lập iOS.
--  **Development Build:** Xây dựng bản phát triển tùy chỉnh.
+- **Expo Go:** Mở nhanh trên thiết bị di động qua ứng dụng Expo Go.
+- **Android Emulator:** Mở trên trình giả lập Android.
+- **iOS Simulator:** Mở trên trình giả lập iOS.
+- **Development Build:** Xây dựng bản phát triển tùy chỉnh.
 
 > Bạn có thể bắt đầu chỉnh sửa code trong thư mục **`app/`**.  
 > Dự án sử dụng **Expo Router** để định tuyến dựa trên file.
 
 ---
 
-##  Tài Nguyên Học Tập
+## Tài Nguyên Học Tập
 
-- [ Tài liệu chính thức của Expo](https://docs.expo.dev)
-- [ Hướng dẫn học Expo](https://docs.expo.dev/tutorial/introduction/)  
+- [Tài liệu chính thức của Expo](https://docs.expo.dev)
+- [Hướng dẫn học Expo](https://docs.expo.dev/tutorial/introduction/)  
   → Tìm hiểu cách tạo ứng dụng chạy trên Android, iOS và Web chỉ với JavaScript.
 
 ---
 
-###  Cảm Ơn Vì Đã Quan Tâm Đến LofiLand!
+### Cảm Ơn Vì Đã Quan Tâm Đến LofiLand
 
 > Hãy bật một bản nhạc yêu thích và thư giãn cùng chúng tôi.
