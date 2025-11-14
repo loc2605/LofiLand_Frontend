@@ -23,7 +23,7 @@ import {
 } from 'expo-av';
 import Slider from '@react-native-community/slider';
 import OptionMenu from '../../components/OptionMenu';
-//import PlaylistModal from '../../components/PlaylistModal';
+import PlaylistModal from '../../components/PlaylistModal';
 import axiosInstance from '../../utils/axiosInstance';
 
 const { width, height } = Dimensions.get('window');
@@ -343,11 +343,12 @@ useEffect(() => {
         }}
       />
 
-      {/* <PlaylistModal
-        visible={isPlaylistModalVisible}
+      <PlaylistModal
+        isVisible={isPlaylistModalVisible}
         onClose={() => setIsPlaylistModalVisible(false)}
-        songId={song?.id}
-      /> */}
+        songId={song?.id} // truyền id bài hát hiện tại
+      />
+      
     </SafeAreaView>
   );
 };

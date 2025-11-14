@@ -38,7 +38,7 @@ export default function LibraryScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState("");
-  const [showAll, setShowAll] = useState(false);
+  const [showCount, setShowCount] = useState(4); // hiển thị ban đầu 4 bài
 
   const fetchFavorites = async () => {
     try {
@@ -93,6 +93,7 @@ export default function LibraryScreen() {
     fetchFavorites();
   }, []);
 
+  // lọc bài hát theo query
   const filteredLiked = useMemo(
     () =>
       songs.filter((s) =>
@@ -101,9 +102,21 @@ export default function LibraryScreen() {
     [songs, query]
   );
 
-  const displayedFavorites = showAll ? filteredLiked : filteredLiked.slice(0, 4);
+  const displayedFavorites = filteredLiked.slice(0, showCount);
 
-    const handleSongPress = (song: Song) => {
+  const handleShowMore = () => {
+    if (showCount >= filteredLiked.length) {
+      setShowCount(4);
+    } else {
+      setShowCount(prev => Math.min(prev + 4, filteredLiked.length));
+    }
+  };
+
+  useEffect(() => {
+    setShowCount(4); // reset khi query hoặc refresh
+  }, [query, songs]);
+
+  const handleSongPress = (song: Song) => {
     router.push({ pathname: '/playingscreen', params: { id: song.id, playlist: JSON.stringify(songs) } });
   };
 
@@ -146,6 +159,7 @@ export default function LibraryScreen() {
                       Chưa có bài hát yêu thích nào
                     </Text>
                   ) : (
+                    <>
                       <FlatList
                         data={displayedFavorites}
                         keyExtractor={(s) => s.id}
@@ -170,6 +184,17 @@ export default function LibraryScreen() {
                         )}
                       />
 
+                      {filteredLiked.length > 4 && (
+                        <TouchableOpacity
+                          style={{ marginTop: 10, alignSelf: "center", padding: 10 }}
+                          onPress={handleShowMore}
+                        >
+                          <Text style={{ color: "#A855F7", fontWeight: "600" }}>
+                            {showCount >= filteredLiked.length ? "Thu gọn" : "Xem thêm"}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </>
                   )}
                 </View>
               );
