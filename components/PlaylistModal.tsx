@@ -17,7 +17,7 @@ import axiosInstance from '../utils/axiosInstance';
 interface PlaylistModalProps {
   isVisible: boolean;
   onClose: () => void;
-  songId?: string;
+  song?: any;
 }
 
 interface Playlist {
@@ -31,7 +31,7 @@ const PRIMARY_COLOR = '#9747FF';
 const SPOTIFY_DARK_BG = '#121212';
 const TEXT_COLOR = '#FFFFFF';
 
-const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, songId }) => {
+const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, song }) => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -39,46 +39,46 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({ isVisible, onClose, songI
   const [newDesc, setNewDesc] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-    const fetchPlaylists = async () => {
+  const fetchPlaylists = async () => {
     setLoading(true);
     try {
-        const res = await axiosInstance.get('/api/playlists');
-        setPlaylists(res.data || []);
+      const res = await axiosInstance.get('/api/playlists');
+      setPlaylists(res.data.playlists || []);
     } catch (error: any) {
-        console.log('Error fetching playlists:', error);
-        Alert.alert('Lỗi', error.message || 'Không thể lấy danh sách playlist');
+      console.log('Error fetching playlists:', error);
+      Alert.alert('Lỗi', error.message || 'Không thể lấy danh sách playlist');
     }
     setLoading(false);
-    };
-
+  };
 
   useEffect(() => {
     if (isVisible) fetchPlaylists();
   }, [isVisible]);
 
-const handleAddToPlaylist = async (playlistId: string) => {
-  if (!songId) {
-    Alert.alert('Lỗi', 'Không có bài hát để thêm');
-    return;
-  }
-
-  try {
-    // gọi API mới
-    const res = await axiosInstance.post(`/api/playlists/${playlistId}/songs`, { songId });
-    
-    if (res.data.success) {
-      Alert.alert('Thành công', 'Bài hát đã được thêm vào playlist');
-      handleClose();
-    } else {
-      Alert.alert('Lỗi', res.data.message || 'Không thể thêm bài hát');
+  const handleAddToPlaylist = async (playlistId: string) => {
+    if (!song) {
+      Alert.alert('Lỗi', 'Không có bài hát để thêm');
+      return;
     }
-  } catch (error: any) {
-    console.log('Error adding song to playlist:', error.response?.data || error.message);
-    const msg = error.response?.data?.message || 'Lỗi server';
-    Alert.alert('Lỗi', msg);
-  }
-};
 
+    try {
+      const res = await axiosInstance.post(
+        `/api/playlists/${playlistId}/songs`,
+        { song } // ✔️ gửi FULL OBJECT
+      );
+
+      if (res.data.success) {
+        Alert.alert('Thành công', 'Bài hát đã được thêm vào playlist');
+        handleClose();
+      } else {
+        Alert.alert('Lỗi', res.data.message || 'Không thể thêm bài hát');
+      }
+    } catch (error: any) {
+      console.log('Error adding song to playlist:', error.response?.data || error.message);
+      const msg = error.response?.data?.message || 'Lỗi server';
+      Alert.alert('Lỗi', msg);
+    }
+  };
 
   const handleCreatePlaylist = async () => {
     if (!newTitle.trim()) {
@@ -153,7 +153,7 @@ const handleAddToPlaylist = async (playlistId: string) => {
             </View>
           )}
 
-          {/* Nút hiển thị form nếu chưa show */}
+          {/* Nút hiển thị form */}
           {!showCreateForm && (
             <TouchableOpacity style={styles.actionButton} onPress={() => setShowCreateForm(true)}>
               <Text style={styles.actionButtonText}>Tạo playlist mới</Text>
@@ -161,28 +161,27 @@ const handleAddToPlaylist = async (playlistId: string) => {
           )}
 
           {/* Danh sách playlist */}
-            <View style={{ flex: 1, marginTop: 40, paddingBottom: 30 }}>
+          <View style={{ flex: 1, marginTop: 40, paddingBottom: 30 }}>
             {loading ? (
-                <ActivityIndicator size="large" color={PRIMARY_COLOR} style={{ marginTop: 20 }} />
+              <ActivityIndicator size="large" color={PRIMARY_COLOR} style={{ marginTop: 20 }} />
             ) : playlists.length === 0 ? (
-                <Text style={{ color: TEXT_COLOR, textAlign: 'center', marginTop: 20 }}>
+              <Text style={{ color: TEXT_COLOR, textAlign: 'center', marginTop: 20 }}>
                 Chưa có playlist nào
-                </Text>
+              </Text>
             ) : (
-                <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
+              <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
                 {playlists.map((playlist) => (
-                    <TouchableOpacity
+                  <TouchableOpacity
                     key={playlist._id}
                     style={styles.playlistItem}
                     onPress={() => handleAddToPlaylist(playlist._id)}
-                    >
+                  >
                     <Text style={styles.playlistTitle}>{playlist.title}</Text>
-                    </TouchableOpacity>
+                  </TouchableOpacity>
                 ))}
-                </ScrollView>
+              </ScrollView>
             )}
-            </View>
-
+          </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -243,20 +242,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-    playlistItem: {
-    paddingVertical: 20, 
+  playlistItem: {
+    paddingVertical: 20,
     paddingHorizontal: 15,
     marginBottom: 10,
     backgroundColor: '#1E1E1E',
     borderRadius: 10,
     borderBottomColor: '#333',
     borderBottomWidth: 1,
-    },
-    playlistTitle: {
+  },
+  playlistTitle: {
     color: TEXT_COLOR,
-    fontSize: 16,   
+    fontSize: 16,
     fontWeight: '600',
-    },
-    });
+  },
+});
 
 export default PlaylistModal;

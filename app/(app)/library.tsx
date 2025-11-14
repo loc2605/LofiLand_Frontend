@@ -10,7 +10,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  Alert
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axiosInstance from "../../utils/axiosInstance";
@@ -23,23 +23,25 @@ type Song = {
   audioUrl: string;
 };
 
-type Playlist = { id: string; name: string; cover: string; count: number };
+type Playlist = {
+  id: string;
+  name: string;
+  cover: string;
+  count: number;
+};
 
-const PLAYLISTS: Playlist[] = [
-  { id: "p1", name: "Daily Mix 1", cover: "https://picsum.photos/seed/p1/300", count: 42 },
-  { id: "p2", name: "Chill Vibes", cover: "https://picsum.photos/seed/p2/300", count: 27 },
-  { id: "p3", name: "Workout Pump", cover: "https://picsum.photos/seed/p3/300", count: 35 },
-  { id: "p4", name: "Focus Beats", cover: "https://picsum.photos/seed/p4/300", count: 18 },
-];
+const DEFAULT_PLAYLIST_COVER = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8c2VhcmNofDF8fG11c2ljfGVufDB8fHx8MTY5OTU1Mjk0OQ&ixlib=rb-4.0.3&q=80&w=400";
 
 export default function LibraryScreen() {
   const router = useRouter();
   const [songs, setSongs] = useState<Song[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState("");
-  const [showCount, setShowCount] = useState(4); // hiển thị ban đầu 4 bài
+  const [showCount, setShowCount] = useState(4);
 
+  // --- Favorites ---
   const fetchFavorites = async () => {
     try {
       const res = await axiosInstance.get("/api/favorites");
@@ -61,25 +63,22 @@ export default function LibraryScreen() {
       }
     } catch (err: any) {
       console.error("Lỗi tải danh sách yêu thích:", err.message);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
     }
   };
 
   const handleRemoveFavorite = (songId: string, title: string) => {
     Alert.alert(
-      'Xóa bài hát',
+      "Xóa bài hát",
       `Bạn có chắc muốn xóa "${title}" khỏi danh sách yêu thích?`,
       [
-        { text: 'Hủy', style: 'cancel' },
+        { text: "Hủy", style: "cancel" },
         {
-          text: 'Xóa',
-          style: 'destructive',
+          text: "Xóa",
+          style: "destructive",
           onPress: async () => {
             try {
               await axiosInstance.delete(`/api/favorites/${songId}`);
-              setSongs(prev => prev.filter(s => s.id !== songId));
+              setSongs((prev) => prev.filter((s) => s.id !== songId));
             } catch (err: any) {
               console.error("Lỗi xóa bài hát:", err.message);
             }
@@ -89,11 +88,51 @@ export default function LibraryScreen() {
     );
   };
 
+  // --- Playlists ---
+  const fetchPlaylists = async () => {
+    try {
+      const res = await axiosInstance.get("/api/playlists");
+      if (res.data.success) {
+        const playlistsData: Playlist[] = await Promise.all(
+          res.data.playlists.map(async (p: any) => {
+            let cover = DEFAULT_PLAYLIST_COVER;
+            try {
+              const songsRes = await axiosInstance.get(`/api/playlists/${p.id}/songs`);
+              if (songsRes.data.success && songsRes.data.songs.length > 0) {
+                cover = songsRes.data.songs[0].album.coverUrl || DEFAULT_PLAYLIST_COVER;
+              }
+            } catch (err) {
+              console.log("Không lấy được cover bài hát đầu tiên:", err);
+            }
+
+            return {
+              id: p.id,
+              name: p.name || p.title || "Playlist",
+              cover,
+              count: p.count || 0,
+            };
+          })
+        );
+        setPlaylists(playlistsData);
+      }
+    } catch (err: any) {
+      console.error("Lỗi tải playlist:", err.message);
+      Alert.alert("Lỗi", err.message || "Không thể tải playlist");
+    }
+  };
+
+  const fetchAll = async () => {
+    setLoading(true);
+    await Promise.all([fetchFavorites(), fetchPlaylists()]);
+    setLoading(false);
+    setRefreshing(false);
+  };
+
   useEffect(() => {
-    fetchFavorites();
+    fetchAll();
   }, []);
 
-  // lọc bài hát theo query
+  // --- Favorites filter & show more ---
   const filteredLiked = useMemo(
     () =>
       songs.filter((s) =>
@@ -101,14 +140,13 @@ export default function LibraryScreen() {
       ),
     [songs, query]
   );
-
   const displayedFavorites = filteredLiked.slice(0, showCount);
 
   const handleShowMore = () => {
     if (showCount >= filteredLiked.length) {
       setShowCount(4);
     } else {
-      setShowCount(prev => Math.min(prev + 4, filteredLiked.length));
+      setShowCount((prev) => Math.min(prev + 4, filteredLiked.length));
     }
   };
 
@@ -117,7 +155,11 @@ export default function LibraryScreen() {
   }, [query, songs]);
 
   const handleSongPress = (song: Song) => {
-    router.push({ pathname: '/playingscreen', params: { id: song.id, playlist: JSON.stringify(songs) } });
+    router.push({ pathname: "/playingscreen", params: { id: song.id, playlist: JSON.stringify(songs) } });
+  };
+
+  const handlePlaylistPress = (playlist: Playlist) => {
+    router.push({ pathname: "/playlistdetail", params: { id: playlist.id } });
   };
 
   return (
@@ -140,7 +182,7 @@ export default function LibraryScreen() {
               refreshing={refreshing}
               onRefresh={() => {
                 setRefreshing(true);
-                fetchFavorites();
+                fetchAll();
               }}
               tintColor="#A855F7"
             />
@@ -209,13 +251,13 @@ export default function LibraryScreen() {
                 </View>
 
                 <FlatList
-                  data={PLAYLISTS}
+                  data={playlists}
                   numColumns={2}
                   keyExtractor={(p) => p.id}
                   columnWrapperStyle={{ justifyContent: "space-between" }}
                   contentContainerStyle={{ paddingTop: 4 }}
                   renderItem={({ item: p }) => (
-                    <TouchableOpacity activeOpacity={0.85} style={styles.playlistCard}>
+                    <TouchableOpacity activeOpacity={0.85} style={styles.playlistCard} onPress={() => handlePlaylistPress(p)}>
                       <Image source={{ uri: p.cover }} style={styles.playlistImage} />
                       <View style={{ padding: 10 }}>
                         <Text style={styles.playlistTitle} numberOfLines={1}>{p.name}</Text>
@@ -223,6 +265,11 @@ export default function LibraryScreen() {
                       </View>
                     </TouchableOpacity>
                   )}
+                  ListEmptyComponent={
+                    <Text style={{ color: "#9CA3AF", textAlign: "center", marginTop: 20 }}>
+                      Bạn chưa có playlist nào
+                    </Text>
+                  }
                 />
               </View>
             );

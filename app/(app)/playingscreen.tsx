@@ -346,9 +346,9 @@ useEffect(() => {
       <PlaylistModal
         isVisible={isPlaylistModalVisible}
         onClose={() => setIsPlaylistModalVisible(false)}
-        songId={song?.id} // truyền id bài hát hiện tại
+        song={song}   // ✔️ gửi object bài hát
       />
-      
+
     </SafeAreaView>
   );
 };
