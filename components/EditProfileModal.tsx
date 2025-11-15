@@ -87,11 +87,19 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, user, onCl
 
     if (!result.canceled) {
       const picked = result.assets[0];
-      setAvatar(picked.uri);
+      const uri = picked.uri;
+      const ext = uri.split(".").pop()?.toLowerCase() || "jpg";
+
+      let mimeType = "image/jpeg"; // default
+      if (ext === "png") mimeType = "image/png";
+      else if (ext === "gif") mimeType = "image/gif";
+      else if (ext === "heic") mimeType = "image/heic"; // nếu server chấp nhận
+
+      setAvatar(uri);
       setImageFile({
-        uri: picked.uri,
-        name: "avatar.jpg",
-        type: "image/jpeg",
+        uri,
+        name: `avatar.${ext}`,
+        type: mimeType,
       });
     }
   };
