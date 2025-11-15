@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import { Entypo } from '@expo/vector-icons';
 import axiosInstance from '../utils/axiosInstance';
 import { useRouter } from 'expo-router';
-import { Entypo } from '@expo/vector-icons';
 import OptionMenu from './OptionMenu';
 
 type SongDetails = {
@@ -10,7 +10,6 @@ type SongDetails = {
   title: string;
   album: { title: string; coverUrl?: string };
   artist: { name: string };
-  audioUrl?: string;
 };
 
 type HistoryItem = {
@@ -20,25 +19,24 @@ type HistoryItem = {
 
 type HistoryListProps = {
   history: HistoryItem[];
-  loading?: boolean;
   onSongPress?: (song: SongDetails) => void;
 };
 
-const HistoryList: React.FC<HistoryListProps> = ({ history, loading = false, onSongPress }) => {
+const CHUNK_SIZE = 5;
+
+const HistoryList: React.FC<HistoryListProps> = ({ history, onSongPress }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [selectedSong, setSelectedSong] = useState<SongDetails | null>(null);
-  const [showAll, setShowAll] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(CHUNK_SIZE);
   const router = useRouter();
 
   const handleTrackPress = (song: SongDetails) => {
-    if (onSongPress) {
-      onSongPress(song);
-    } else {
+    if (onSongPress) onSongPress(song);
+    else
       router.push({
         pathname: '/playingscreen',
         params: { id: song.id, playlist: JSON.stringify(history.map(h => h.song)) },
       });
-    }
   };
 
   const handleMenuPress = (song: SongDetails) => {
@@ -48,24 +46,19 @@ const HistoryList: React.FC<HistoryListProps> = ({ history, loading = false, onS
 
   const handleAddToPlaylist = () => {
     setMenuVisible(false);
-    if (selectedSong) {
-      Alert.alert('Thành công', `Thêm "${selectedSong.title}" vào Playlist.`);
-    }
+    if (selectedSong) Alert.alert('Thành công', `Thêm "${selectedSong.title}" vào Playlist.`);
   };
 
   const handleAddToFavorites = () => {
     setMenuVisible(false);
-    const songToAdd = selectedSong;
-
-    if (!songToAdd?.id) {
+    if (!selectedSong?.id) {
       Alert.alert('Lỗi', 'Không có bài hát để thêm vào yêu thích');
       return;
     }
-
     axiosInstance
-      .post('/api/favorites', { songId: songToAdd.id })
+      .post('/api/favorites', { songId: selectedSong.id })
       .then(() => {
-        Alert.alert('Thành công', `Đã thêm "${songToAdd.title}" vào danh sách yêu thích`);
+        Alert.alert('Thành công', `Đã thêm "${selectedSong.title}" vào danh sách yêu thích`);
       })
       .catch((error) => {
         Alert.alert(
@@ -76,10 +69,6 @@ const HistoryList: React.FC<HistoryListProps> = ({ history, loading = false, onS
       });
   };
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#9747FF" style={{ marginTop: 20 }} />;
-  }
-
   if (!history || history.length === 0) {
     return (
       <Text style={{ color: '#AAA', marginTop: 20, fontSize: 16, paddingHorizontal: 15 }}>
@@ -88,7 +77,20 @@ const HistoryList: React.FC<HistoryListProps> = ({ history, loading = false, onS
     );
   }
 
-  const displayedHistory = showAll ? history : history.slice(0, 5);
+  const displayedHistory = history.slice(0, visibleCount);
+
+  const handleShowMore = () => {
+    if (visibleCount >= history.length) {
+      // đã hiển thị hết -> ẩn bớt về CHUNK_SIZE
+      setVisibleCount(CHUNK_SIZE);
+    } else {
+      // tăng thêm CHUNK_SIZE
+      const nextCount = Math.min(visibleCount + CHUNK_SIZE, history.length);
+      setVisibleCount(nextCount);
+    }
+  };
+
+  const showMoreText = visibleCount >= history.length ? 'Ẩn bớt' : 'Xem thêm';
 
   return (
     <>
@@ -126,17 +128,14 @@ const HistoryList: React.FC<HistoryListProps> = ({ history, loading = false, onS
         showsVerticalScrollIndicator={false}
         scrollEnabled={false}
         ListFooterComponent={
-          history.length > 5 ? (
-            <TouchableOpacity onPress={() => setShowAll(!showAll)} style={styles.showMoreButton}>
-              <Text style={styles.showMoreText}>
-                {showAll ? 'Ẩn bớt' : 'Xem thêm'}
-              </Text>
+          history.length > CHUNK_SIZE ? (
+            <TouchableOpacity onPress={handleShowMore} style={styles.showMoreButton}>
+              <Text style={styles.showMoreText}>{showMoreText}</Text>
             </TouchableOpacity>
           ) : null
         }
       />
 
-      {/* Option menu */}
       <OptionMenu
         visible={menuVisible}
         onClose={() => {

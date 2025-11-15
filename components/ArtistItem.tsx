@@ -8,21 +8,23 @@ type ArtistItemProps = {
   name: string;
   image: string;
   onPress?: () => void;
+  onUnfollow?: () => void;
 };
 
-const ArtistItem: React.FC<ArtistItemProps> = ({ id, name, image, onPress }) => {
+const ArtistItem: React.FC<ArtistItemProps> = ({ id, name, image, onPress, onUnfollow }) => {
   const { followedArtists, follow, unfollow } = useFollow();
   const [loading, setLoading] = useState(false);
 
   const isFollowing = id ? followedArtists.has(id) : false;
 
   const handleFollow = async () => {
-    if (!id) return; // đảm bảo id tồn tại
+    if (!id) return;
     setLoading(true);
     try {
       if (isFollowing) {
         await axiosInstance.post('/api/follows/unfollow', { artistId: id });
         unfollow(id);
+        onUnfollow?.(); // gọi callback để remove khỏi list
       } else {
         await axiosInstance.post('/api/follows/follow', {
           artist: { id, name, avatarUrl: image || '' },

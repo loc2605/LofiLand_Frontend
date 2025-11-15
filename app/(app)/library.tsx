@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   FlatList,
   Image,
@@ -14,6 +14,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axiosInstance from "../../utils/axiosInstance";
+import ArtistItem from "../../components/ArtistItem";
+import { useFollow } from "../../context/FollowContext";
 
 type Song = {
   id: string;
@@ -30,6 +32,13 @@ type Playlist = {
   count: number;
 };
 
+interface FollowedArtist {
+  artist: {
+    id: string;
+    name: string;
+    avatarUrl?: string;
+  };
+}
 const DEFAULT_PLAYLIST_COVER =
   "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8c2VhcmNofDF8fG11c2ljfGVufDB8fHx8MTY5OTU1Mjk0OQ&ixlib=rb-4.0.3&q=80&w=400";
 
@@ -37,6 +46,7 @@ export default function LibraryScreen() {
   const router = useRouter();
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [artists, setArtists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState("");
@@ -120,16 +130,34 @@ export default function LibraryScreen() {
     }
   };
 
-  const fetchAll = async () => {
+  // --- Fetch followed artists ---
+  const fetchFollowedArtists = async () => {
+    try {
+      const res = await axiosInstance.get("/api/follows/user/me");
+      if (res.data.success) {
+        const artistList = (res.data.data as FollowedArtist[] || []).map((f: FollowedArtist) => ({
+          _id: f.artist.id,
+          name: f.artist.name,
+          avatarUrl: f.artist.avatarUrl,
+        }));
+        setArtists(artistList);
+      }
+    } catch (err: any) {
+      console.error("Lỗi tải nghệ sĩ đang theo dõi:", err.message);
+      setArtists([]);
+    }
+  };
+
+  const fetchAll = useCallback(async () => {
     setLoading(true);
-    await Promise.all([fetchFavorites(), fetchPlaylists()]);
+    await Promise.all([fetchFavorites(), fetchPlaylists(), fetchFollowedArtists()]);
     setLoading(false);
     setRefreshing(false);
-  };
+  }, []);
 
   useEffect(() => {
     fetchAll();
-  }, []);
+  }, [fetchAll]);
 
   // --- Favorites filter & show more ---
   const filteredLiked = useMemo(
@@ -204,7 +232,7 @@ export default function LibraryScreen() {
         </View>
       ) : (
         <FlatList
-          data={[{ key: "liked" }, { key: "playlists" }]}
+          data={[{ key: "liked" }, { key: "playlists" }, { key: "artists" }]}
           keyExtractor={(i) => i.key}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 10 }}
@@ -217,6 +245,7 @@ export default function LibraryScreen() {
           }
           ListFooterComponent={() => <View style={{ height: 80 }} />}
           renderItem={({ item }) => {
+            // --- Liked Songs ---
             if (item.key === "liked") {
               return (
                 <View style={styles.section}>
@@ -224,6 +253,7 @@ export default function LibraryScreen() {
                     <Ionicons name="heart-outline" size={20} color="#A855F7" />
                     <Text style={styles.sectionTitle}>Bài hát yêu thích</Text>
                   </View>
+
                   {filteredLiked.length === 0 ? (
                     <Text style={{ color: "#9CA3AF", marginLeft: 28 }}>Chưa có bài hát yêu thích nào</Text>
                   ) : (
@@ -231,7 +261,9 @@ export default function LibraryScreen() {
                       data={displayedFavorites}
                       keyExtractor={(s, index) => `${s.id}-${index}`}
                       nestedScrollEnabled={true}
-                      ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: "#1f1f1f", marginVertical: 6 }} />}
+                      ItemSeparatorComponent={() => (
+                        <View style={{ height: 1, backgroundColor: "#1f1f1f", marginVertical: 6 }} />
+                      )}
                       renderItem={({ item: s }) => (
                         <TouchableOpacity
                           activeOpacity={0.85}
@@ -240,17 +272,27 @@ export default function LibraryScreen() {
                         >
                           <Image source={{ uri: s.album.coverUrl }} style={styles.songImage} />
                           <View style={{ flex: 1 }}>
-                            <Text style={styles.songTitle} numberOfLines={1}>{s.title}</Text>
-                            <Text style={styles.songArtist} numberOfLines={1}>{s.artist.name}</Text>
+                            <Text style={styles.songTitle} numberOfLines={1}>
+                              {s.title}
+                            </Text>
+                            <Text style={styles.songArtist} numberOfLines={1}>
+                              {s.artist.name}
+                            </Text>
                           </View>
-                          <TouchableOpacity onPress={() => handleRemoveFavorite(s.id, s.title)} style={{ padding: 8 }}>
+                          <TouchableOpacity
+                            onPress={() => handleRemoveFavorite(s.id, s.title)}
+                            style={{ padding: 8 }}
+                          >
                             <Ionicons name="heart" size={18} color="#A855F7" />
                           </TouchableOpacity>
                         </TouchableOpacity>
                       )}
                       ListFooterComponent={() =>
                         filteredLiked.length > 4 ? (
-                          <TouchableOpacity style={{ marginTop: 10, alignSelf: "center", padding: 10 }} onPress={handleShowMore}>
+                          <TouchableOpacity
+                            style={{ marginTop: 10, alignSelf: "center"}}
+                            onPress={handleShowMore}
+                          >
                             <Text style={{ color: "#A855F7", fontWeight: "600" }}>
                               {showCount >= filteredLiked.length ? "Thu gọn" : "Xem thêm"}
                             </Text>
@@ -263,56 +305,108 @@ export default function LibraryScreen() {
               );
             }
 
-            // --- Playlist section with delete icon ---
+            // --- Playlists ---
+            if (item.key === "playlists") {
+              return (
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Ionicons name="albums-outline" size={20} color="#A855F7" />
+                    <Text style={styles.sectionTitle}>Playlist của bạn</Text>
+                  </View>
+
+                  <FlatList
+                    data={displayedPlaylists}
+                    numColumns={2}
+                    keyExtractor={(p, index) => `${p.id}-${index}`}
+                    columnWrapperStyle={{ justifyContent: "space-between" }}
+                    nestedScrollEnabled={true}
+                    contentContainerStyle={{ paddingTop: 4 }}
+                    renderItem={({ item: p }) => (
+                      <View style={styles.playlistCard}>
+                        <TouchableOpacity
+                          activeOpacity={0.85}
+                          style={{ flex: 1 }}
+                          onPress={() => handlePlaylistPress(p)}
+                        >
+                          <Image source={{ uri: p.cover }} style={styles.playlistImage} />
+                          <View style={{ padding: 10 }}>
+                            <Text style={styles.playlistTitle} numberOfLines={1}>
+                              {p.name}
+                            </Text>
+                            <Text style={styles.playlistCount}>{p.count} bài hát</Text>
+                          </View>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          onPress={() => handleDeletePlaylist(p)}
+                          style={styles.deleteIcon}
+                        >
+                          <Ionicons name="trash-outline" size={20} color="#F87171" />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    ListFooterComponent={() =>
+                      playlists.length > 4 ? (
+                        <TouchableOpacity
+                          style={{ marginTop: 10, alignSelf: "center", padding: 10 }}
+                          onPress={handleShowMorePlaylist}
+                        >
+                          <Text style={{ color: "#A855F7", fontWeight: "600" }}>
+                            {showPlaylistCount >= playlists.length ? "Thu gọn" : "Xem thêm"}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : null
+                    }
+                  />
+                </View>
+              );
+            }
+
+            // --- Artists Section ---
             return (
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
-                  <Ionicons name="albums-outline" size={20} color="#A855F7" />
-                  <Text style={styles.sectionTitle}>Playlist của bạn</Text>
+                  <Ionicons name="person-circle-outline" size={20} color="#A855F7" />
+                  <Text style={styles.sectionTitle}>Nghệ sĩ đang theo dõi</Text>
                 </View>
+
+                {artists.length === 0 ? (
+                  <Text style={{ color: "#9CA3AF", marginLeft: 28 }}>
+                    Bạn chưa theo dõi nghệ sĩ nào
+                  </Text>
+                ) : (
                 <FlatList
-                  data={displayedPlaylists}
-                  numColumns={2}
-                  keyExtractor={(p, index) => `${p.id}-${index}`}
-                  columnWrapperStyle={{ justifyContent: "space-between" }}
-                  nestedScrollEnabled={true}
-                  contentContainerStyle={{ paddingTop: 4 }}
-                  renderItem={({ item: p }) => (
-                    <View style={styles.playlistCard}>
-                      <TouchableOpacity
-                        activeOpacity={0.85}
-                        style={{ flex: 1 }}
-                        onPress={() => handlePlaylistPress(p)}
-                      >
-                        <Image source={{ uri: p.cover }} style={styles.playlistImage} />
-                        <View style={{ padding: 10 }}>
-                          <Text style={styles.playlistTitle} numberOfLines={1}>{p.name}</Text>
-                          <Text style={styles.playlistCount}>{p.count} bài hát</Text>
-                        </View>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => handleDeletePlaylist(p)}
-                        style={styles.deleteIcon}
-                      >
-                        <Ionicons name="trash-outline" size={20} color="#F87171" />
-                      </TouchableOpacity>
+                  data={artists}
+                  keyExtractor={(a) => a._id}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  renderItem={({ item: a }) => (
+                    <View style={{ alignItems: "center", marginRight: 16 }}>
+                      <ArtistItem
+                        id={a._id}
+                        name={a.name}
+                        image={a.avatarUrl || DEFAULT_PLAYLIST_COVER}
+                        onPress={() =>
+                          router.push({
+                            pathname: '/artistdetail',
+                            params: {
+                              artistId: a._id,
+                              artistName: a.name,
+                              artistImage: a.avatarUrl || DEFAULT_PLAYLIST_COVER,
+                            },
+                          })
+                        }
+                        onUnfollow={() =>
+                          setArtists(prev => prev.filter(artist => artist._id !== a._id))
+                        }
+                      />
                     </View>
                   )}
-                  ListFooterComponent={() =>
-                    playlists.length > 4 ? (
-                      <TouchableOpacity
-                        style={{ marginTop: 10, alignSelf: "center", padding: 10 }}
-                        onPress={handleShowMorePlaylist}
-                      >
-                        <Text style={{ color: "#A855F7", fontWeight: "600" }}>
-                          {showPlaylistCount >= playlists.length ? "Thu gọn" : "Xem thêm"}
-                        </Text>
-                      </TouchableOpacity>
-                    ) : null
-                  }
                 />
+                )}
               </View>
             );
+
           }}
         />
       )}
@@ -324,8 +418,8 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#121212" },
   header: { alignItems: "center", justifyContent: "center", paddingVertical: 10, backgroundColor: "#121212", borderBottomColor: "#1F1F1F", borderBottomWidth: 0.5 },
   headerTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "800" },
-  section: { paddingHorizontal: 16, paddingTop: 20 },
-  sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
+  section: { paddingHorizontal: 16, paddingTop: 10},
+  sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
   sectionTitle: { marginLeft: 8, color: "#FFFFFF", fontSize: 20, fontWeight: "bold" },
   songItem: { flexDirection: "row", alignItems: "center", paddingVertical: 10 },
   songImage: { width: 60, height: 60, borderRadius: 6, marginRight: 12 },
