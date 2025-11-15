@@ -179,23 +179,31 @@ export default function LibraryScreen() {
   }, [fetchAll]);
 
   // --- Event Handlers ---
-  const handleRemoveFavorite = useCallback(
-    (songId: string, title: string) => {
-      Alert.alert(
-        "Xóa bài hát",
-        `Bạn có chắc muốn xóa "${title}" khỏi danh sách yêu thích?`,
-        [
-          { text: "Hủy", style: "cancel" },
-          {
-            text: "Xóa",
-            style: "destructive",
-            onPress: async () => setSongs(prev => prev.filter(s => s.id !== songId)),
+const handleRemoveFavorite = useCallback(
+  async (songId: string, title: string) => {
+    Alert.alert(
+      "Xóa bài hát",
+      `Bạn có chắc muốn xóa "${title}" khỏi danh sách yêu thích?`,
+      [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Xóa",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await axiosInstance.delete(`/api/favorites/${songId}`);
+              // fetch lại danh sách favorite từ server
+              await fetchFavorites();
+            } catch (err) {
+              console.error("Lỗi xóa favorite:", err);
+            }
           },
-        ]
-      );
-    },
-    []
-  );
+        },
+      ]
+    );
+  },
+  [fetchFavorites]
+);
 
   const handleSongPress = useCallback(
     (song: Song) => router.push({ pathname: "/playingscreen", params: { id: song.id, playlist: JSON.stringify(songs) } }),
@@ -279,7 +287,7 @@ export default function LibraryScreen() {
                     renderItem={({ item: s }) => <SongItem song={s} onPress={handleSongPress} onRemove={() => handleRemoveFavorite(s.id, s.title)} />}
                     ListFooterComponent={() =>
                       filteredLiked.length > 4 ? (
-                        <TouchableOpacity style={{ marginTop: 10, alignSelf: "center"}} onPress={handleShowMore}>
+                        <TouchableOpacity style={{ alignSelf: "center"}} onPress={handleShowMore}>
                           <Text style={{ color: "#A855F7", fontWeight: "600" }}>{showCount >= filteredLiked.length ? "Thu gọn" : "Xem thêm"}</Text>
                         </TouchableOpacity>
                       ) : null
@@ -308,7 +316,7 @@ export default function LibraryScreen() {
                   renderItem={({ item: p }) => <PlaylistCard playlist={p} onPress={handlePlaylistPress} onDelete={handleDeletePlaylist} />}
                   ListFooterComponent={() =>
                     playlists.length > 4 ? (
-                      <TouchableOpacity style={{ marginTop: 10, alignSelf: "center", padding: 10 }} onPress={handleShowMorePlaylist}>
+                      <TouchableOpacity style={{ alignSelf: "center", padding: 10 }} onPress={handleShowMorePlaylist}>
                         <Text style={{ color: "#A855F7", fontWeight: "600" }}>{showPlaylistCount >= playlists.length ? "Thu gọn" : "Xem thêm"}</Text>
                       </TouchableOpacity>
                     ) : null

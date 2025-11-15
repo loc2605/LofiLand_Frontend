@@ -28,9 +28,9 @@ export default function PlaylistDetailScreen() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [playlistName, setPlaylistName] = useState("");
+  const [playlistDescription, setPlaylistDescription] = useState(""); // thêm mô tả
   const [favorites, setFavorites] = useState<string[]>([]); // chứa id bài hát yêu thích
 
-  // Lấy danh sách yêu thích ban đầu
   useEffect(() => {
     fetchFavorites();
   }, []);
@@ -48,6 +48,7 @@ export default function PlaylistDetailScreen() {
         if (res.data.success) {
           setSongs(res.data.songs || []);
           setPlaylistName(res.data.playlist?.title || "Playlist");
+          setPlaylistDescription(res.data.playlist?.description || ""); // set mô tả
         } else {
           Alert.alert("Lỗi", res.data.message || "Không thể tải playlist");
         }
@@ -140,6 +141,9 @@ export default function PlaylistDetailScreen() {
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.header}>{playlistName}</Text>
+        {playlistDescription ? (
+          <Text style={styles.description}>{playlistDescription}</Text>
+        ) : null}
       </View>
 
       <FlatList
@@ -193,12 +197,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#121212",
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   headerContainer: {
-    height: 50,
     justifyContent: "center",
-    marginBottom: 10,
+    marginBottom: 25,
   },
   backButton: {
     position: "absolute",
@@ -211,6 +214,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  description: {
+    color: "#9CA3AF",
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 4,
+    paddingHorizontal: 20,
   },
   songItem: {
     flexDirection: "row",
