@@ -28,8 +28,8 @@ export default function PlaylistDetailScreen() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [playlistName, setPlaylistName] = useState("");
-  const [playlistDescription, setPlaylistDescription] = useState(""); // thêm mô tả
-  const [favorites, setFavorites] = useState<string[]>([]); // chứa id bài hát yêu thích
+  const [playlistDescription, setPlaylistDescription] = useState("");
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
     fetchFavorites();
