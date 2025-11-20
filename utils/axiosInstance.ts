@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 //Thay IP bên dưới bằng IP của máy bạn
-const API_BASE_URL = 'http://192.168.24.6:5000';
+const API_BASE_URL = 'http://172.20.10.6:5000';
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
