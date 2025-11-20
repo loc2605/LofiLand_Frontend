@@ -179,31 +179,21 @@ export default function LibraryScreen() {
   }, [fetchAll]);
 
   // --- Event Handlers ---
-const handleRemoveFavorite = useCallback(
-  async (songId: string, title: string) => {
-    Alert.alert(
-      "Xóa bài hát",
-      `Bạn có chắc muốn xóa "${title}" khỏi danh sách yêu thích?`,
-      [
-        { text: "Hủy", style: "cancel" },
-        {
-          text: "Xóa",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await axiosInstance.delete(`/api/favorites/${songId}`);
-              // fetch lại danh sách favorite từ server
-              await fetchFavorites();
-            } catch (err) {
-              console.error("Lỗi xóa favorite:", err);
-            }
-          },
-        },
-      ]
-    );
-  },
-  [fetchFavorites]
-);
+  const handleRemoveFavorite = useCallback(
+    async (songId: string, title: string) => {
+      // cập nhật trước trong UI
+      setSongs(prev => prev.filter(s => s.id !== songId));
+
+      try {
+        await axiosInstance.delete(`/api/favorites/${songId}`);
+        fetchFavorites(); // gọi lại server để sync
+      } catch (err) {
+        console.error("Lỗi xóa favorite:", err);
+        fetchFavorites(); // nếu lỗi vẫn sync lại
+      }
+    },
+    [fetchFavorites]
+  );
 
   const handleSongPress = useCallback(
     (song: Song) => router.push({ pathname: "/playingscreen", params: { id: song.id, playlist: JSON.stringify(songs) } }),
@@ -372,19 +362,88 @@ const handleRemoveFavorite = useCallback(
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#121212" },
-  header: { alignItems: "center", justifyContent: "center", paddingVertical: 10, backgroundColor: "#121212", borderBottomColor: "#1F1F1F", borderBottomWidth: 0.5 },
-  headerTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "800" },
-  section: { paddingHorizontal: 16, paddingTop: 10},
-  sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
-  sectionTitle: { marginLeft: 8, color: "#FFFFFF", fontSize: 20, fontWeight: "bold" },
-  songItem: { flexDirection: "row", alignItems: "center", paddingVertical: 10 },
-  songImage: { width: 60, height: 60, borderRadius: 6, marginRight: 12 },
-  songTitle: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },
-  songArtist: { color: "#9CA3AF", marginTop: 2, fontSize: 14 },
-  playlistCard: { width: "48%", marginBottom: 14, backgroundColor: "#1B1B1B", borderRadius: 12, overflow: "hidden" },
-  playlistImage: { width: "100%", height: 140 },
-  playlistTitle: { color: "#FFFFFF", fontWeight: "700", fontSize: 15 },
-  playlistCount: { color: "#9CA3AF", marginTop: 3, fontSize: 13 },
-  deleteIcon: { position: "absolute", right: 8, bottom: 8, backgroundColor: "#1B1B1B", padding: 6, borderRadius: 20, justifyContent: "center", alignItems: "center" },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#121212",
+  },
+  header: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    backgroundColor: "#121212",
+    borderBottomColor: "#1F1F1F",
+    borderBottomWidth: 0.5,
+  },
+  headerTitle: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "800",
+  },
+  section: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    marginLeft: 8,
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  songItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  songImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  songTitle: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  songArtist: {
+    color: "#9CA3AF",
+    marginTop: 2,
+    fontSize: 14,
+  },
+  playlistCard: {
+    width: "48%",
+    marginBottom: 14,
+    backgroundColor: "#1B1B1B",
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  playlistImage: {
+    width: "100%",
+    height: 140,
+  },
+  playlistTitle: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  playlistCount: {
+    color: "#9CA3AF",
+    marginTop: 3,
+    fontSize: 13,
+  },
+  deleteIcon: {
+    position: "absolute",
+    right: 8,
+    bottom: 8,
+    backgroundColor: "#1B1B1B",
+    padding: 6,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
