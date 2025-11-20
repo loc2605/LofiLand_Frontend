@@ -48,7 +48,7 @@ export default function PlaylistDetailScreen() {
         if (res.data.success) {
           setSongs(res.data.songs || []);
           setPlaylistName(res.data.playlist?.title || "Playlist");
-          setPlaylistDescription(res.data.playlist?.description || ""); // set mô tả
+          setPlaylistDescription(res.data.playlist?.description || "");
         } else {
           Alert.alert("Lỗi", res.data.message || "Không thể tải playlist");
         }

@@ -283,98 +283,98 @@ const HomeScreen: React.FC = () => {
           >
             {searchResults ? (
               <View style={{ marginVertical: 10 }}>
-                {/* Filter Buttons */}
-                <View style={{ flexDirection: 'row', marginBottom: 10 }}>
-                  {['all', 'track', 'album', 'artist'].map((type) => {
-                    let label = '';
-                    switch (type) {
-                      case 'all': label = 'Tất cả'; break;
-                      case 'track': label = 'Bài hát'; break;
-                      case 'album': label = 'Album'; break;
-                      case 'artist': label = 'Nghệ sĩ'; break;
-                    }
-                    const isActive = filter === type;
-                    return (
-                      <TouchableOpacity
-                        key={type}
-                        onPress={() => {
-                          setFilter(type as any);
-                          Keyboard.dismiss();
-                        }}             
-                        style={{
-                          paddingHorizontal: 15,
-                          paddingVertical: 6,
-                          borderRadius: 20,
-                          backgroundColor: isActive ? '#9747FF' : '#333',
-                          marginRight: 8,
-                        }}
-                      >
-                        <Text style={{ color: '#FFF', fontWeight: '600' }}>{label}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
+              {/* Filter Buttons */}
+              <View style={{ flexDirection: 'row', marginBottom: 10 }}>
+                {['all', 'track', 'album', 'artist'].map((type) => {
+                  let label = '';
+                  switch (type) {
+                    case 'all': label = 'Tất cả'; break;
+                    case 'track': label = 'Bài hát'; break;
+                    case 'album': label = 'Album'; break;
+                    case 'artist': label = 'Nghệ sĩ'; break;
+                  }
+                  const isActive = filter === type;
+                  return (
+                    <TouchableOpacity
+                      key={type}
+                      onPress={() => setFilter(type as any)}
+                      style={{
+                        paddingHorizontal: 15,
+                        paddingVertical: 6,
+                        borderRadius: 20,
+                        backgroundColor: isActive ? '#9747FF' : '#333',
+                        marginRight: 8,
+                      }}
+                    >
+                      <Text style={{ color: '#FFF', fontWeight: '600' }}>{label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
 
                 {/* Loading */}
                 {searchLoading && <ActivityIndicator color="#9747FF" style={{ marginVertical: 10 }} />}
 
                 {/* List */}
-                {filteredResults.map((item) => {
-                  if (item.type === 'track') {
-                    const t = item.data;
-                    return (
-                      <TouchableOpacity
-                        key={t.id}
-                        style={styles.listItem}
-                        onPress={() =>
-                          router.push({
-                            pathname: '/playingscreen',
-                            params: { id: t.id, playlist: JSON.stringify(searchResults.tracks) },
-                          })
-                        }
-                      >
-                        <Image source={{ uri: t.album.coverUrl || 'https://placehold.co/60x60' }} style={styles.listItemImage} />
-                        <View style={styles.listItemText}>
-                          <Text style={styles.listItemTitle}>{t.title}</Text>
-                          <Text style={styles.listItemSubtitle}>Bài hát • {t.artist.name}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  }
-                  if (item.type === 'album') {
-                    const a = item.data;
-                    return (
-                      <TouchableOpacity
-                        key={a.id}
-                        style={styles.listItem}
-                        onPress={() => handleAlbumPress(a)}
-                      >
-                        <Image source={{ uri: a.coverUrl || 'https://placehold.co/60x60' }} style={styles.listItemImage} />
-                        <View style={styles.listItemText}>
-                          <Text style={styles.listItemTitle}>{a.title}</Text>
-                          <Text style={styles.listItemSubtitle}>Album • {a.artist.name}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  }
-                  if (item.type === 'artist') {
-                    const ar = item.data;
-                    return (
-                      <TouchableOpacity
-                        key={ar.id}
-                        style={styles.listItem}
-                        onPress={() => router.push({ pathname: '/artistdetail', params: { artistId: ar.id, artistName: ar.name, artistImage: ar.avatarUrl } })}
-                      >
-                        <Image source={{ uri: ar.avatarUrl || defaultProfileImage }} style={[styles.listItemImage, { borderRadius: 30 }]} />
-                        <View style={styles.listItemText}>
-                          <Text style={styles.listItemTitle}>{ar.name}</Text>
-                          <Text style={styles.listItemSubtitle}>Nghệ sĩ</Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  }
-                  return null;
-                })}
+                {filteredResults.length === 0 ? (
+                  <Text style={{ color: '#AAA', paddingVertical: 12 }}>Không có kết quả</Text>
+                ) : (
+                  filteredResults.map((item) => {
+                    if (item.type === 'track') {
+                      const t = item.data;
+                      return (
+                        <TouchableOpacity
+                          key={t.id}
+                          style={styles.listItem} // list item style
+                          onPress={() =>
+                            router.push({
+                              pathname: '/playingscreen',
+                              params: { id: t.id, playlist: JSON.stringify(searchResults.tracks) },
+                            })
+                          }
+                        >
+                          <Image source={{ uri: t.album.coverUrl || 'https://placehold.co/60x60' }} style={styles.listItemImage} />
+                          <View style={styles.listItemText}>
+                            <Text style={styles.listItemTitle}>{t.title}</Text>
+                            <Text style={styles.listItemSubtitle}>{t.artist.name}</Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    }
+                    if (item.type === 'album') {
+                      const a = item.data;
+                      return (
+                        <TouchableOpacity
+                          key={a.id}
+                          style={{ flexDirection: 'row', marginBottom: 12, alignItems: 'center' }}
+                          onPress={() => handleAlbumPress(a)}
+                        >
+                          <Image source={{ uri: a.coverUrl }} style={{ width: 70, height: 70, borderRadius: 6, marginRight: 12 }} />
+                          <View>
+                            <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 16 }}>{a.title}</Text>
+                            <Text style={{ color: '#AAA', marginTop: 2 }}>{a.artist.name}</Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    }
+                    if (item.type === 'artist') {
+                      const ar = item.data;
+                      return (
+                        <TouchableOpacity
+                          key={ar.id}
+                          style={{ flexDirection: 'row', marginBottom: 12, alignItems: 'center' }}
+                          onPress={() =>
+                            router.push({ pathname: '/artistdetail', params: { artistId: ar.id, artistName: ar.name, artistImage: ar.avatarUrl } })
+                          }
+                        >
+                          <Image source={{ uri: ar.avatarUrl || defaultProfileImage }} style={{ width: 60, height: 60, borderRadius: 30, marginRight: 12 }} />
+                          <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 16 }}>{ar.name}</Text>
+                        </TouchableOpacity>
+                      );
+                    }
+                    return null;
+                  })
+                )}
               </View>
             ) : (
               <>
@@ -414,7 +414,7 @@ const HomeScreen: React.FC = () => {
               </>
             )}
 
-            <View style={{ height: 100 }} />
+            <View style={{ height: 60 }} />
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>

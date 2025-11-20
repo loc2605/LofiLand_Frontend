@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#121212" },
   header: { alignItems: "center", justifyContent: "center", paddingVertical: 10, borderBottomColor: "#1F1F1F", borderBottomWidth: 0.5 },
   headerTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "800" },
-  section: { paddingHorizontal: 16, paddingTop: 20 },
+  section: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 30 },
   sectionTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "bold" },
   artistList: { paddingVertical: 16, paddingRight: 8 },
   artistCard: { alignItems: "center", width: 110 },
