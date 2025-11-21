@@ -27,6 +27,7 @@ import SuggestionItem from '../../components/SuggestionItem';
 import AlbumItem from '../../components/AlbumItem';
 import ArtistItem from '../../components/ArtistItem';
 
+
 const { width } = Dimensions.get('window');
 
 type User = { username: string; email: string; avatarUrl?: string };
@@ -67,6 +68,10 @@ const HomeScreen: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
+  const [chatVisible, setChatVisible] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ id: string; from: 'user' | 'ai'; text: string }[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
 
   // ===== Search States =====
   const [searchQuery, setSearchQuery] = useState('');
@@ -230,6 +235,27 @@ const HomeScreen: React.FC = () => {
     }
   }, []);
 
+  const handleSendMessage = async (text: string) => {
+    const userMsg = { id: Date.now().toString(), from: 'user' as const, text };
+    setChatMessages((prev) => [...prev, userMsg]);
+    setChatLoading(true);
+
+    try {
+      const res = await axiosInstance.post('/api/ai', { prompt: text });
+      const aiText = res.data.output || 'Xin lỗi, tôi không hiểu.';
+      const aiMsg = { id: (Date.now() + 1).toString(), from: 'ai' as const, text: aiText };
+      setChatMessages((prev) => [...prev, aiMsg]);
+    } catch (err) {
+      console.error(err);
+      const aiMsg = { id: (Date.now() + 1).toString(), from: 'ai' as const, text: 'Có lỗi xảy ra. Thử lại sau.' };
+      setChatMessages((prev) => [...prev, aiMsg]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+
+
   // ====================== Loading State ======================
   if (loading && !refreshing) {
     return (
@@ -262,7 +288,17 @@ const HomeScreen: React.FC = () => {
       >
         <View style={{ flex: 1 }}>
           {drawerVisible && <TouchableOpacity style={styles.overlay} onPress={() => setDrawerVisible(false)} activeOpacity={1} />}
-          {user && <Header name={user.username} profileImage={{ uri: user.avatarUrl || defaultProfileImage }} onProfilePress={() => setDrawerVisible(true)} />}
+          {user && (
+          <Header
+            name={user.username}
+            profileImage={{ uri: user.avatarUrl || defaultProfileImage }}
+            onProfilePress={() => setDrawerVisible(true)}
+            onChatPress={() => router.push({
+            pathname: "/chatscreen",
+            params: { avatarUrl: user.avatarUrl }
+          })}
+          />
+          )}
 
           <SearchBar
             value={searchQuery}

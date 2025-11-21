@@ -6,9 +6,10 @@ type HeaderProps = {
   name: string; 
   profileImage: ImageSourcePropType;
   onProfilePress?: () => void;
+  onChatPress?: () => void;
 };
 
-const Header: React.FC<HeaderProps> = ({ name, profileImage, onProfilePress }) => {
+const Header: React.FC<HeaderProps> = ({ name, profileImage, onProfilePress, onChatPress }) => {
   return (
     <View style={styles.container}>
       <View>
@@ -16,7 +17,9 @@ const Header: React.FC<HeaderProps> = ({ name, profileImage, onProfilePress }) =
         <Text style={styles.userName}>{name}</Text>
       </View>
       <View style={styles.rightSection}>
-        <Ionicons name="notifications-outline" size={24} color="#FFF" style={styles.icon} />
+      <TouchableOpacity onPress={onChatPress}>
+        <Ionicons name="chatbubble-outline" size={24} color="#FFF" style={styles.icon} />
+      </TouchableOpacity>
         <TouchableOpacity onPress={onProfilePress}>
           <Image source={profileImage} style={styles.profileImage} />
         </TouchableOpacity>
@@ -24,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({ name, profileImage, onProfilePress }) =
     </View>
   );
 };
+
 
 export default Header;
 
@@ -51,11 +55,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   icon: {
-    marginRight: 15,
+    marginRight: 16,
   },
   profileImage: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
 });

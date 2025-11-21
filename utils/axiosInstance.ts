@@ -6,7 +6,7 @@ const API_BASE_URL = 'http://192.168.1.10:5000';
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 5000,
+  timeout: 20000,
 });
 
 // Tự động thêm token từ SecureStore

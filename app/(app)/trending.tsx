@@ -54,7 +54,6 @@ export default function TrendingScreen() {
           }));
           setArtists(mappedArtists);
 
-          // map tracks to Song[]
           const mappedTracks: Song[] = (res.data.tracks || []).map((t: any, i: number) => ({
             id: t.id,
             title: t.title,
@@ -186,9 +185,9 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#121212" },
   header: { alignItems: "center", justifyContent: "center", paddingVertical: 10, borderBottomColor: "#1F1F1F", borderBottomWidth: 0.5 },
   headerTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "800" },
-  section: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 30 },
-  sectionTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "bold" },
-  artistList: { paddingVertical: 16, paddingRight: 8 },
+  section: { paddingHorizontal: 16, paddingTop: 20 },
+  sectionTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "bold" , paddingBottom: 15},
+  artistList: { paddingRight: 8 },
   artistCard: { alignItems: "center", width: 110 },
   artistAvatarWrapper: { width: 96, height: 96 },
   artistAvatar: { width: 96, height: 96, borderRadius: 48 },
