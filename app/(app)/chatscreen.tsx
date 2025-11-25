@@ -196,7 +196,7 @@ const ChatScreen: React.FC = () => {
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 40} // giảm xuống cho gần bàn phím
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 40}
       >
         <View style={styles.inputContainer}>
           <TextInput

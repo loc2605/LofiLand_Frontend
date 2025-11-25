@@ -17,9 +17,9 @@ const Header: React.FC<HeaderProps> = ({ name, profileImage, onProfilePress, onC
         <Text style={styles.userName}>{name}</Text>
       </View>
       <View style={styles.rightSection}>
-      <TouchableOpacity onPress={onChatPress}>
-        <Ionicons name="chatbubble-outline" size={24} color="#FFF" style={styles.icon} />
-      </TouchableOpacity>
+        <TouchableOpacity onPress={onChatPress}>
+          <Ionicons name="chatbubble-outline" size={24} color="#FFF" style={styles.icon} />
+        </TouchableOpacity>
         <TouchableOpacity onPress={onProfilePress}>
           <Image source={profileImage} style={styles.profileImage} />
         </TouchableOpacity>
@@ -27,7 +27,6 @@ const Header: React.FC<HeaderProps> = ({ name, profileImage, onProfilePress, onC
     </View>
   );
 };
-
 
 export default Header;
 

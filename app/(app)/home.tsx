@@ -464,23 +464,41 @@ const HomeScreen: React.FC = () => {
       />
       <EditProfileModal
         visible={editVisible}
-        user={user || { username: '', avatarUrl: '' }}
+        user={user || { username: '', avatarUrl: defaultProfileImage }}
         onClose={() => setEditVisible(false)}
         onSave={async ({ username, imageFile }) => {
           try {
             const formData = new FormData();
             if (username) formData.append('username', username);
-            if (imageFile) formData.append('avatar', { uri: imageFile.uri, name: imageFile.name || 'avatar.jpg', type: imageFile.type || 'image/jpeg' } as any);
-            const res = await axiosInstance.put('/api/users/profile', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-            setUser(res.data.user);
+            if (imageFile) {
+              formData.append('avatar', {
+                uri: imageFile.uri,
+                name: imageFile.name || 'avatar.jpg',
+                type: imageFile.type || 'image/jpeg',
+              } as any);
+            }
+
+            const res = await axiosInstance.put('/api/users/profile', formData, {
+              headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            const updatedUser = res.data.user;
+            setUser({
+              ...updatedUser,
+              avatarUrl: updatedUser.avatarUrl
+                ? `${updatedUser.avatarUrl}?t=${Date.now()}`
+                : defaultProfileImage,
+            });
+
             setEditVisible(false);
             alert('Cập nhật hồ sơ thành công');
           } catch (error: any) {
             console.error('Error updating profile:', error);
-            alert(error.message || error.data?.message || 'Có lỗi xảy ra, thử lại sau');
+            alert(error.message || 'Có lỗi xảy ra, thử lại sau');
           }
         }}
       />
+
     </SafeAreaView>
   );
 };

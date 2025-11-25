@@ -289,12 +289,16 @@ export default function LibraryScreen() {
           }
 
           if (item.key === "playlists") {
-            return (
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Ionicons name="albums-outline" size={20} color="#A855F7" />
-                  <Text style={styles.sectionTitle}>Playlist của bạn</Text>
-                </View>
+          return (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="albums-outline" size={20} color="#A855F7" />
+                <Text style={styles.sectionTitle}>Playlist của bạn</Text>
+              </View>
+
+              {playlists.length === 0 ? (
+                <Text style={{ color: "#9CA3AF", marginLeft: 28 }}>Chưa có playlist nào</Text>
+              ) : (
                 <FlatList
                   data={displayedPlaylists}
                   extraData={displayedPlaylists}
@@ -303,18 +307,27 @@ export default function LibraryScreen() {
                   columnWrapperStyle={{ justifyContent: "space-between" }}
                   nestedScrollEnabled
                   contentContainerStyle={{ paddingTop: 4 }}
-                  renderItem={({ item: p }) => <PlaylistCard playlist={p} onPress={handlePlaylistPress} onDelete={handleDeletePlaylist} />}
+                  renderItem={({ item: p }) => (
+                    <PlaylistCard
+                      playlist={p}
+                      onPress={handlePlaylistPress}
+                      onDelete={handleDeletePlaylist}
+                    />
+                  )}
                   ListFooterComponent={() =>
                     playlists.length > 4 ? (
                       <TouchableOpacity style={{ alignSelf: "center", padding: 10 }} onPress={handleShowMorePlaylist}>
-                        <Text style={{ color: "#A855F7", fontWeight: "600" }}>{showPlaylistCount >= playlists.length ? "Thu gọn" : "Xem thêm"}</Text>
+                        <Text style={{ color: "#A855F7", fontWeight: "600" }}>
+                          {showPlaylistCount >= playlists.length ? "Thu gọn" : "Xem thêm"}
+                        </Text>
                       </TouchableOpacity>
                     ) : null
                   }
                 />
-              </View>
-            );
-          }
+              )}
+            </View>
+          );
+        }
 
           // Artists
           return (
