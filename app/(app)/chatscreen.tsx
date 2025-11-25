@@ -145,10 +145,7 @@ const ChatScreen: React.FC = () => {
       </View>
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        <View style={{ flex: 1 }}>
           <FlatList
             ref={flatListRef}
             data={messages}
@@ -188,7 +185,6 @@ const ChatScreen: React.FC = () => {
                   </View>
                 </View>
 
-                {/* Hiển thị gợi ý bài hát nếu có */}
                 {item.songs && item.songs.length > 0 && (
                   <View style={styles.songList}>
                     {item.songs.map((song: any) => renderSongItem(song, item.songs!))}
@@ -198,27 +194,34 @@ const ChatScreen: React.FC = () => {
             )}
           />
 
-          <View style={styles.inputContainer}>
-            <TextInput
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder="Nhập tin nhắn..."
-              placeholderTextColor="#AAA"
-              style={styles.input}
-              onSubmitEditing={handleSend}
-              returnKeyType="send"
-              multiline
-            />
-            <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-              {loading ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Ionicons name="send" size={20} color="#FFF" />
-              )}
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 40} // giảm xuống cho gần bàn phím
+      >
+        <View style={styles.inputContainer}>
+          <TextInput
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Nhập tin nhắn..."
+            placeholderTextColor="#AAA"
+            style={styles.input}
+            onSubmitEditing={handleSend}
+            returnKeyType="send"
+            multiline
+          />
+          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+            {loading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Ionicons name="send" size={20} color="#FFF" />
+            )}
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+
+        </View>
       </TouchableWithoutFeedback>
+
     </SafeAreaView>
   );
 };
