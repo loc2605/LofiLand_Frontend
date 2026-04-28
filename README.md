@@ -1,98 +1,165 @@
-# LofiLand - Ứng Dụng Nghe Nhạc
+# LofiLand - Music Streaming App
 
-Chào mừng đến với **LofiLand**, dự án ứng dụng nghe nhạc đa nền tảng được xây dựng bằng **Expo**!
-
----
-
-## Giới Thiệu Dự Án
-
-**LofiLand** là một ứng dụng di động được thiết kế để cung cấp trải nghiệm nghe nhạc **mượt mà và thư giãn**, tập trung vào **thể loại Lofi** và **nhạc ambient**.  
-Dự án được phát triển nhằm mang lại **giao diện thân thiện**, **dễ sử dụng** và **cá nhân hóa trải nghiệm nghe nhạc** cho người yêu nhạc.
+Welcome to **LofiLand**, a cross-platform music streaming application built with **Expo**!
 
 ---
 
-## Thành Viên Phát Triển
+## Project Introduction
 
-- **Đoàn Lan Hương**
-- **Phan Hữu Lộc**
+**LofiLand** is a mobile application designed to provide a **smooth, relaxing, and personalized music listening experience**, with a main focus on **Lofi** and **ambient music**.
 
----
-
-## Chức Năng Chính
-
-LofiLand cung cấp các tính năng cốt lõi sau để người dùng có trải nghiệm nghe nhạc trọn vẹn:
-
-### Quản Lý Tài Khoản & Người Dùng
-
-- **Đăng Ký, Đăng Nhập:** Tạo tài khoản và đăng nhập để cá nhân hóa trải nghiệm.
-- **Cập Nhật Thông Tin Cá Nhân:** Chỉnh sửa thông tin hồ sơ người dùng.
-- **Đăng Xuất:** Thoát khỏi tài khoản an toàn.
-
-### Tìm Kiếm & Thư Viện
-
-- **Tìm Kiếm Nâng Cao:** Tìm bài hát theo tên, nghệ sĩ hoặc thể loại yêu thích.
-- **Danh Sách Yêu Thích:** Tạo và quản lý danh sách bài hát yêu thích.
-- **Tạo Playlist Cá Nhân:** Tùy chỉnh và sắp xếp danh sách phát nhạc của riêng mình.
-
-### Trải Nghiệm Nghe Nhạc
-
-- **Phát Nhạc:** Nghe nhạc mượt mà với các thao tác cơ bản (phát/tạm dừng, chuyển bài).
-- **Xem Lời Bài Hát (Lyrics):** Hiển thị lời bài hát (nếu có).
-- **Bình Luận:** Cho phép người dùng bình luận về bài hát hoặc album.
+The project aims to deliver a **user-friendly interface**, easy navigation, and a personalized experience for music lovers who enjoy calm and relaxing sounds.
 
 ---
 
-## Công Nghệ Sử Dụng
+## Development Team
 
-Dự án được xây dựng dựa trên các công nghệ sau:
-
-- **Expo:** Framework và nền tảng cho React Native.
-- **React Native:** Phát triển giao diện người dùng đa nền tảng (iOS & Android).
-- **Expo Router:** Hệ thống định tuyến dựa trên cấu trúc thư mục.
+- **Doan Lan Huong**
+- **Phan Huu Loc**
 
 ---
 
-## Bắt Đầu Phát Triển
+## Main Features
 
-### 1. Cài Đặt
+LofiLand provides core features that help users enjoy a complete music listening experience.
 
-Đảm bảo bạn đã cài đặt **Node.js** và **npm** hoặc **yarn**.
+### Account & User Management
+
+- **Sign Up and Sign In:** Create an account and log in to personalize the user experience.
+- **Update Profile Information:** Edit and manage personal user information.
+- **Log Out:** Safely sign out of the application.
+
+### Search & Library
+
+- **Advanced Search:** Search for songs by title, artist, or favorite genre.
+- **Favorite Songs List:** Create and manage a list of favorite songs.
+- **Personal Playlist Creation:** Customize and organize personal music playlists.
+
+### Music Listening Experience
+
+- **Music Playback:** Enjoy smooth music playback with basic controls such as play, pause, and next track.
+- **Lyrics Display:** View song lyrics when available.
+- **Comments:** Allow users to comment on songs or albums.
+
+---
+
+## Technologies Used
+
+This project is built using the following technologies:
+
+- **Expo:** A framework and platform for building React Native applications.
+- **React Native:** A framework for developing cross-platform mobile user interfaces for iOS and Android.
+- **Expo Router:** A file-based routing system for Expo and React Native applications.
+
+---
+
+## Getting Started
+
+### 1. Installation
+
+Make sure you have **Node.js** and **npm** or **yarn** installed on your machine.
 
 ```bash
-# Cài đặt các gói phụ thuộc
+# Install dependencies
 npm install
-# hoặc
+
+# or
 yarn install
 ```
 
-### 2. Khởi Động Ứng Dụng
+### 2. Start the Application
 
-Chạy lệnh sau để khởi động **Development Server**:
+Run the following command to start the **development server**:
 
 ```bash
 npx expo start
 ```
 
-Sau khi chạy lệnh, bạn có thể chọn cách mở ứng dụng:
+After starting the development server, you can choose one of the following options to open the application:
 
-- **Expo Go:** Mở nhanh trên thiết bị di động qua ứng dụng Expo Go.
-- **Android Emulator:** Mở trên trình giả lập Android.
-- **iOS Simulator:** Mở trên trình giả lập iOS.
-- **Development Build:** Xây dựng bản phát triển tùy chỉnh.
+- **Expo Go:** Quickly open the app on a mobile device using the Expo Go app.
+- **Android Emulator:** Run the app on an Android emulator.
+- **iOS Simulator:** Run the app on an iOS simulator.
+- **Development Build:** Use a custom development build for advanced testing.
 
-> Bạn có thể bắt đầu chỉnh sửa code trong thư mục **`app/`**.  
-> Dự án sử dụng **Expo Router** để định tuyến dựa trên file.
-
----
-
-## Tài Nguyên Học Tập
-
-- [Tài liệu chính thức của Expo](https://docs.expo.dev)
-- [Hướng dẫn học Expo](https://docs.expo.dev/tutorial/introduction/)  
-  → Tìm hiểu cách tạo ứng dụng chạy trên Android, iOS và Web chỉ với JavaScript.
+> You can start editing the source code inside the **`app/`** directory.  
+> This project uses **Expo Router**, which supports file-based routing.
 
 ---
 
-### Cảm Ơn Vì Đã Quan Tâm Đến LofiLand
+## Project Structure
 
-> Hãy bật một bản nhạc yêu thích và thư giãn cùng chúng tôi.
+Below is a basic project structure for an Expo Router application:
+
+```bash
+LofiLand/
+├── app/
+│   ├── index.js
+│   ├── login.js
+│   ├── register.js
+│   ├── profile.js
+│   ├── search.js
+│   ├── playlist.js
+│   └── player.js
+├── assets/
+│   ├── images/
+│   └── icons/
+├── components/
+│   ├── Header.js
+│   ├── MusicCard.js
+│   ├── PlayerControl.js
+│   └── PlaylistItem.js
+├── constants/
+│   └── colors.js
+├── hooks/
+│   └── useMusicPlayer.js
+├── package.json
+└── README.md
+```
+
+> The structure may be adjusted depending on the actual development requirements of the project.
+
+---
+
+## Suggested Screens
+
+The application may include the following main screens:
+
+- **Home Screen:** Display recommended songs, playlists, and trending Lofi tracks.
+- **Login Screen:** Allow users to sign in to their accounts.
+- **Register Screen:** Allow new users to create an account.
+- **Search Screen:** Help users search for songs, artists, or genres.
+- **Music Player Screen:** Display the current song, playback controls, and lyrics.
+- **Playlist Screen:** Allow users to view and manage personal playlists.
+- **Favorite Screen:** Display songs saved by the user.
+- **Profile Screen:** Allow users to view and update personal information.
+
+---
+
+## Future Improvements
+
+In future versions, LofiLand can be expanded with additional features such as:
+
+- Dark mode and light mode support.
+- Offline music playback.
+- Music recommendation system.
+- User listening history.
+- Mood-based playlists.
+- Push notifications for new songs or playlists.
+- Social sharing features.
+- Admin dashboard for managing songs, albums, and users.
+
+---
+
+## Learning Resources
+
+- [Official Expo Documentation](https://docs.expo.dev)
+- [Expo Tutorial](https://docs.expo.dev/tutorial/introduction/)
+
+Learn how to build applications for Android, iOS, and Web using JavaScript and React Native.
+
+---
+
+## Thank You for Your Interest in LofiLand
+
+> Turn on your favorite track and relax with us.
